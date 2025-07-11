@@ -1,8 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Mock data — replace with real questions from DB later
+// Example mock questions — replace with real data later
 const questions = [
   {
     id: 1,
@@ -38,47 +39,52 @@ const questions = [
 
 export default function QuestionsPage() {
   const handleDeleteAll = () => {
-    // TODO: Implement deletion logic
+    // TODO: hook up with DB deletion
     console.log("Delete all questions");
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-800">Questions</h1>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-800">Questions</h1>
         <Button variant="destructive" onClick={handleDeleteAll}>
           Delete All
         </Button>
       </div>
 
-      <ol className="">
-        {questions.map((q, index) => (
-          <li
-            key={q.id}
-            className="bg-white p-4 shadow border flex flex-col md:flex-row md:items-start"
-          >
-            {/* Left Side: Index + Question Text */}
-            <div className="flex-1 space-y-2 pr-4 md:max-w-4xl">
-              <span className="font-semibold text-sm text-gray-500">
-                Question {index + 1}
-              </span>
-              <p className="text-gray-800 text-base leading-relaxed">
-                {q.question}
-              </p>
-            </div>
+      <ScrollArea className="max-h-[calc(100vh-180px)] pr-2">
+        <ol>
+          {questions.map((q, index) => (
+            <li
+              key={q.id}
+              className="bg-white border border-gray-200 shadow-md px-6 py-5 flex flex-col md:flex-row md:items-start gap-6 transition hover:shadow-lg"
+            >
+              {/* Left: Question number + question text */}
+              <div className="flex-1 md:pr-6 border-r md:border-r-gray-200">
+                <span className="text-sm text-gray-500 font-medium block mb-1">
+                  Question {index + 1}
+                </span>
+                <p className="text-gray-800 text-base leading-relaxed font-medium">
+                  {q.question}
+                </p>
+              </div>
 
-            {/* Right Side: Options */}
-            <div className="md:w-64 mt-4 border-l md:mt-0 md:pl-6 space-y-2 text-sm text-gray-700">
-              {Object.entries(q.options).map(([key, val]) => (
-                <div key={key} className="flex items-start gap-2">
-                  <span className="font-semibold">{key}.</span>
-                  <span>{val}</span>
-                </div>
-              ))}
-            </div>
-          </li>
-        ))}
-      </ol>
+              {/* Right: Options */}
+              <div className="md:w-64 space-y-2 text-sm text-gray-700">
+                {Object.entries(q.options).map(([key, val]) => (
+                  <div
+                    key={key}
+                    className="flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2"
+                  >
+                    <span className="font-semibold text-gray-600">{key}.</span>
+                    <span>{val}</span>
+                  </div>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </ScrollArea>
     </div>
   );
 }
