@@ -24,15 +24,15 @@ export default function Sidebar() {
   return (
     <aside className="h-screen w-64 bg-white shadow-md flex flex-col border-r">
       {/* Logo */}
-      <div className="p-4 border-b">
+      <Link href="/admin/dashboard" className="p-4 border-b">
         <Image
-          src="/images/brand-logo.svg"
-          alt="Brand Logo"
+          src="/images/subebjgw.png"
+          alt="SUBEB Jigawa"
           width={180}
           height={50}
           className="mx-auto"
         />
-      </div>
+      </Link>
 
       {/* Nav */}
       <nav className="flex-1 p-4 space-y-2">
