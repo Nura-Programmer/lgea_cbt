@@ -26,12 +26,16 @@ export default function AdminLoginPage() {
 
           <form className="space-y-5">
             <div>
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username" className="mb-2">
+                Username
+              </Label>
               <Input id="username" type="text" placeholder="admin" />
             </div>
 
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="mb-2">
+                Password
+              </Label>
               <Input id="password" type="password" placeholder="••••••••" />
             </div>
 
