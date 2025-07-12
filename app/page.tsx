@@ -33,7 +33,7 @@ export default function Home() {
               <Link href="/login">Login as Applicant</Link>
             </Button>
             <Button variant={"destructive"} className="w-40">
-              <Link href="/admin">Login as Admin</Link>
+              <Link href="/admin/login">Login as Admin</Link>
             </Button>
           </div>
         </div>
