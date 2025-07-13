@@ -21,28 +21,28 @@ model Admin {
 }
 
 model Applicant {
-  id         Int       @id @default(autoincrement())
-  appNo      String    @unique
-  firstName  String
-  surname    String
-  status     Status    @default(PENDING)
-  startTime  DateTime? 
-  endTime    DateTime? 
-  score      Float?    
+  id        Int       @id @default(autoincrement())
+  appNo     String    @unique
+  firstName String
+  surname   String
+  status    Status    @default(PENDING)
+  startTime DateTime?
+  endTime   DateTime?
+  score     Float?
 
-  answers     ApplicantAnswer[]
-  tokenUsed   Token?    @relation(fields: [tokenId], references: [id])
-  tokenId     Int?      @unique
+  answers   ApplicantAnswer[]
+  tokenUsed Token?            @relation(fields: [tokenId], references: [id])
+  tokenId   Int?              @unique
 }
 
 model Token {
-  id         Int       @id @default(autoincrement())
-  token      String    @unique
-  tokenType  TokenType
-  used       Boolean   @default(false)
+  id        Int       @id @default(autoincrement())
+  token     String    @unique
+  tokenType TokenType
+  used      Boolean   @default(false)
 
-  applicant  Applicant?
-  createdAt  DateTime  @default(now())
+  applicant Applicant?
+  createdAt DateTime   @default(now())
 }
 
 model Question {
@@ -54,17 +54,17 @@ model Question {
   correctOption Json
   marks         Int?         @default(1)
 
-  answers       ApplicantAnswer[]
+  answers ApplicantAnswer[]
 }
 
 model ApplicantAnswer {
-  id           Int       @id @default(autoincrement())
-  applicant    Applicant @relation(fields: [applicantId], references: [id])
-  applicantId  Int
-  question     Question  @relation(fields: [questionId], references: [id])
-  questionId   Int
-  selected     Json
-  isCorrect    Boolean?
+  id          Int       @id @default(autoincrement())
+  applicant   Applicant @relation(fields: [applicantId], references: [id])
+  applicantId Int
+  question    Question  @relation(fields: [questionId], references: [id])
+  questionId  Int
+  selected    Json
+  isCorrect   Boolean?
 }
 
 enum TokenType {
