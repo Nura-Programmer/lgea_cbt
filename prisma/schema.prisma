@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+}
+
+model Applicant {
+  id         Int       @id @default(autoincrement())
+  appNo      String    @unique
+  firstName  String
+  surname    String
+  status     Status    @default(PENDING)
+  startTime  DateTime? 
+  endTime    DateTime? 
+  score      Float?    
+
+  answers     ApplicantAnswer[]
+  tokenUsed   Token?    @relation(fields: [tokenId], references: [id])
+  tokenId     Int?      @unique
+}
+
+model Token {
+  id         Int       @id @default(autoincrement())
+  token      String    @unique
+  tokenType  TokenType
+  used       Boolean   @default(false)
+
+  applicant  Applicant?
+  createdAt  DateTime  @default(now())
+}
+
+model Question {
+  id            Int          @id @default(autoincrement())
+  tokenType     TokenType
+  question      String
+  questionType  QuestionType
+  options       Json
+  correctOption Json
+  marks         Int?         @default(1)
+
+  answers       ApplicantAnswer[]
+}
+
+model ApplicantAnswer {
+  id           Int       @id @default(autoincrement())
+  applicant    Applicant @relation(fields: [applicantId], references: [id])
+  applicantId  Int
+  question     Question  @relation(fields: [questionId], references: [id])
+  questionId   Int
+  selected     Json
+  isCorrect    Boolean?
+}
+
+enum TokenType {
+  english
+  arabic
+}
+
+enum QuestionType {
+  objective
+  multiChoice
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  DONE
+}
