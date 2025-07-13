@@ -13,28 +13,45 @@ export default function Home() {
             src="/images/completed-steps.png"
             alt="Welcome to LGEA CBT"
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
             className="object-cover"
             priority
           />
         </div>
 
         {/* Right: Login Form */}
-        <div className="flex flex-col justify-center w-full md:w-1/2 p-8 md:p-10 bg-white">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Welcome to LGEA CBT
-          </h2>
-          <p className="text-balance">
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-            Reprehenderit quos ratione repellendus labore quisquam consequatur?
+        <div className="text-center space-y-6 px-2">
+          <Image
+            src="/images/subeb_logo.png"
+            alt="SUBEB"
+            width={100}
+            height={10}
+            className="mx-auto my-4 object-cover height-auto w-24"
+          />
+          <h1 className="text-4xl md:text-4xl font-bold text-gray-800">
+            Welcome to CBT Portal
+          </h1>
+          <p className="text-lg text-gray-600 max-w-xl mx-auto px-8">
+            Take computer-based tests in a secure, reliable, and intuitive
+            environment. Powered by modern web technologies.
           </p>
 
-          <div className="flex justify-between mt-4">
-            <Button className="w-40">
-              <Link href="/login">Login as Applicant</Link>
-            </Button>
-            <Button variant={"destructive"} className="w-40">
-              <Link href="/admin/login">Login as Admin</Link>
-            </Button>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/admin/login">
+              <Button variant="outline" className="w-46 text-lg" size="lg">
+                Admin login
+              </Button>
+            </Link>
+
+            <Link href="/login">
+              <Button className="w-46 text-lg" size="lg">
+                Applicant login
+              </Button>
+            </Link>
+          </div>
+
+          <div className="pt-2 text-sm text-gray-400">
+            &copy; {new Date().getFullYear()} Intelligent CBT System by Nura
           </div>
         </div>
       </Card>
