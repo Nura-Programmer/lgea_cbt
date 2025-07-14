@@ -1,6 +1,4 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
+import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Example mock questions — replace with real data later
@@ -38,18 +36,11 @@ const questions = [
 ];
 
 export default function QuestionsPage() {
-  const handleDeleteAll = () => {
-    // TODO: hook up with DB deletion
-    console.log("Delete all questions");
-  };
-
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Questions</h1>
-        <Button variant="destructive" onClick={handleDeleteAll}>
-          Delete All
-        </Button>
+        <DeleteAllButton delType="questions" />
       </div>
 
       <ScrollArea className="max-h-[calc(100vh-180px)] pr-2">

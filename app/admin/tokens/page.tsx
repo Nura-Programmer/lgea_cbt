@@ -1,6 +1,5 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
+import DeleteAllButton from "@/components/admin/DeleteAllButton";
+import PrintButton from "@/components/admin/PrintButton";
 import {
   Table,
   TableBody,
@@ -18,26 +17,13 @@ const tokens = [
 ];
 
 export default function TokensPage() {
-  const handlePrint = () => {
-    window.print(); // basic print for now
-  };
-
-  const handleDeleteAll = () => {
-    console.log("Delete all tokens");
-    // TODO: implement actual delete
-  };
-
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Tokens</h1>
         <div className="flex gap-3">
-          <Button variant="secondary" onClick={handlePrint}>
-            Print
-          </Button>
-          <Button variant="destructive" onClick={handleDeleteAll}>
-            Delete All
-          </Button>
+          <PrintButton />
+          <DeleteAllButton delType="tokens" />
         </div>
       </div>
 

@@ -1,6 +1,5 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
+import DeleteAllButton from "@/components/admin/DeleteAllButton";
+import UploadApplicantsForm from "@/components/admin/UploadForm";
 import {
   Table,
   TableBody,
@@ -39,19 +38,22 @@ const applicants = [
 ];
 
 export default function ApplicantsPage() {
-  const handleDeleteAll = () => {
-    // TODO: Add confirmation and delete logic
-    console.log("Delete all applicants");
-  };
+  if (!applicants || applicants.length === 0) {
+    return (
+      <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
+        <h2 className="text-xl font-semibold text-red-800">
+          No applicants found!
+        </h2>
+        <UploadApplicantsForm />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-gray-800">Applicants</h1>
-        {/* Destructive variant for delete action */}
-        <Button variant="destructive" onClick={handleDeleteAll}>
-          Delete All
-        </Button>
+        <DeleteAllButton delType="applicants" />
       </div>
 
       <div className="rounded-lg border bg-white">
