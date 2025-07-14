@@ -8,13 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-// Mock tokens — replace with DB data later
-const tokens = [
-  { id: 1, token: "ABC123", tokenType: "science", usedBy: 101 },
-  { id: 2, token: "XYZ456", tokenType: "arabic", usedBy: null },
-  { id: 3, token: "QWE789", tokenType: "science", usedBy: 104 },
-];
+import { tokens } from "@/data/mocks";
 
 export default function TokensPage() {
   return (

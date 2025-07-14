@@ -8,34 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-// Mock data — Replace with real data fetched via Prisma/React Query later
-const applicants = [
-  {
-    id: 1,
-    appNo: "SCI001",
-    firstName: "Aisha",
-    surname: "Abdullahi",
-    status: "PENDING",
-    tokenType: "science",
-  },
-  {
-    id: 2,
-    appNo: "ARA002",
-    firstName: "Yusuf",
-    surname: "Ahmed",
-    status: "DONE",
-    tokenType: "arabic",
-  },
-  {
-    id: 3,
-    appNo: "SCI003",
-    firstName: "Fatima",
-    surname: "Sani",
-    status: "IN_PROGRESS",
-    tokenType: "science",
-  },
-];
+import { applicants } from "@/data/mocks";
 
 export default function ApplicantsPage() {
   if (!applicants || applicants.length === 0) {

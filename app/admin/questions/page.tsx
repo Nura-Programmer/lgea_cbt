@@ -1,39 +1,6 @@
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-// Example mock questions — replace with real data later
-const questions = [
-  {
-    id: 1,
-    question: "What is the capital of Nigeria?",
-    options: {
-      A: "Lagos",
-      B: "Abuja",
-      C: "Kano",
-      D: "Port Harcourt",
-    },
-  },
-  {
-    id: 2,
-    question: "Which planet is known as the Red Planet?",
-    options: {
-      A: "Earth",
-      B: "Venus",
-      C: "Mars",
-      D: "Jupiter",
-    },
-  },
-  {
-    id: 3,
-    question: "What is the chemical symbol for water?",
-    options: {
-      A: "H2O",
-      B: "CO2",
-      C: "O2",
-      D: "NaCl",
-    },
-  },
-];
+import { questions } from "@/data/mocks";
 
 export default function QuestionsPage() {
   return (

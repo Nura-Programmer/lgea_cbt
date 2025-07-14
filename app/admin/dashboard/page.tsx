@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { Users, FileText, KeyRound, CircleCheck, CircleX } from "lucide-react";
+import { applicantsExist, questionsExist, tokensExist } from "@/data/mocks";
 
 type CardStatus = {
   title: string;
-  href: string;
   icon: React.ReactNode;
   isReady: boolean;
   statusText: string;
@@ -13,25 +13,24 @@ type CardStatus = {
 
 const dashboardCards: CardStatus[] = [
   {
-    title: "Applicants",
-    href: "/admin/applicants",
+    title: "applicants",
     icon: <Users className="h-8 w-8 text-blue-600" />,
-    isReady: false, // change to true if applicants exist
-    statusText: "Upload applicants",
+    isReady: applicantsExist, // change to true if applicants exist
+    statusText: applicantsExist ? "Applicants uploaded" : "Upload applicants!",
   },
   {
-    title: "Questions",
-    href: "/admin/questions",
+    title: "questions",
     icon: <FileText className="h-8 w-8 text-green-600" />,
-    isReady: true,
-    statusText: "Questions uploaded",
+    isReady: questionsExist,
+    statusText: questionsExist ? "Questions uploaded" : "Upload questions!",
   },
   {
-    title: "Tokens",
-    href: "/admin/tokens",
+    title: "tokens",
     icon: <KeyRound className="h-8 w-8 text-yellow-600" />,
-    isReady: false,
-    statusText: "Generate tokens",
+    isReady: tokensExist,
+    statusText: tokensExist
+      ? "Tokens available"
+      : "No tokens! Generate new tokens",
   },
 ];
 
@@ -42,16 +41,16 @@ export default function DashboardPage() {
       <p className="text-gray-600">Quick overview and actions</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        {dashboardCards.map(({ title, href, icon, isReady, statusText }) => (
+        {dashboardCards.map(({ title, icon, isReady, statusText }) => (
           <Link
-            href={href}
+            href={`/admin/${title}`}
             key={title}
             className="group p-6 rounded-xl border border-gray-200 shadow hover:shadow-lg bg-white transition duration-200 flex flex-col gap-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {icon}
-                <span className="text-lg font-medium text-gray-800">
+                <span className="text-lg capitalize font-medium text-gray-800">
                   {title}
                 </span>
               </div>
