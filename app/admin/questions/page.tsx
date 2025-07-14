@@ -1,8 +1,20 @@
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
+import UploadForm from "@/components/admin/UploadForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { questions } from "@/data/mocks";
+import { questions, questionsExist } from "@/data/mocks";
 
 export default function QuestionsPage() {
+  if (!questions || !questionsExist) {
+    return (
+      <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
+        <h2 className="text-xl font-semibold text-red-800">
+          No questions found!
+        </h2>
+        <UploadForm uploadType="questions" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -10,37 +22,42 @@ export default function QuestionsPage() {
         <DeleteAllButton delType="questions" />
       </div>
 
-      <ScrollArea className="max-h-[calc(100vh-180px)] pr-2">
-        <ol>
-          {questions.map((q, index) => (
-            <li
-              key={q.id}
-              className="bg-white border border-gray-200 shadow-md px-6 py-5 flex flex-col md:flex-row md:items-start gap-6 transition hover:shadow-lg"
-            >
-              {/* Left: Question number + question text */}
-              <div className="flex-1 md:pr-6 border-r md:border-r-gray-200">
-                <span className="text-sm text-gray-500 font-medium block mb-1">
-                  Question {index + 1}
-                </span>
-                <p className="text-gray-800 text-base leading-relaxed font-medium">
-                  {q.question}
-                </p>
-              </div>
-
-              {/* Right: Options */}
-              <div className="md:w-64 space-y-2 text-sm text-gray-700">
-                {Object.entries(q.options).map(([key, val]) => (
-                  <div
-                    key={key}
-                    className="flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2"
-                  >
-                    <span className="font-semibold text-gray-600">{key}.</span>
-                    <span>{val}</span>
+      <ScrollArea className="max-h-[calc(100vh-120px)] overflow-y-auto">
+        <ol className="grid lg:grid-cols-2 gap-2 p-4">
+          {questions.map(
+            ({ id, questionType, question, options, correctOption }, index) => (
+              <li
+                key={id}
+                className="bg-white border border-gray-200 shadow-md px-6 py-5 flex flex-col md:flex-row md:items-start gap-6 transition hover:shadow-lg"
+              >
+                <div className="flex-1 md:pr-6 md:border-r-gray-200">
+                  <div className="flex justify-between w-md text-sm text-gray-500 font-medium mb-1">
+                    <span>Question {index + 1}</span> |
+                    <em className="text-gray-400">{questionType}</em> |
+                    <strong>
+                      {correctOption
+                        ? `Correct: ${correctOption}`
+                        : "No correct option specified"}
+                    </strong>
                   </div>
-                ))}
-              </div>
-            </li>
-          ))}
+                  <p className="text-gray-800 text-base leading-relaxed font-medium">
+                    {question}
+                  </p>
+                  {Object.entries(options).map(([key, option]) => (
+                    <div
+                      key={key}
+                      className="flex items-start gap-2 rounded-lg bg-gray-50 m-2 p-2"
+                    >
+                      <span className="font-semibold text-gray-600">
+                        {key}.
+                      </span>
+                      <span>{option}</span>
+                    </div>
+                  ))}
+                </div>
+              </li>
+            )
+          )}
         </ol>
       </ScrollArea>
     </div>

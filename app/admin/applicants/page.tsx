@@ -1,5 +1,5 @@
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
-import UploadApplicantsForm from "@/components/admin/UploadForm";
+import UploadForm from "@/components/admin/UploadForm";
 import {
   Table,
   TableBody,
@@ -8,16 +8,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { applicants } from "@/data/mocks";
+import { applicants, applicantsExist } from "@/data/mocks";
 
 export default function ApplicantsPage() {
-  if (!applicants || applicants.length === 0) {
+  if (!applicants || !applicantsExist) {
     return (
       <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
         <h2 className="text-xl font-semibold text-red-800">
           No applicants found!
         </h2>
-        <UploadApplicantsForm />
+        <UploadForm uploadType="applicants" />
       </div>
     );
   }
@@ -42,29 +42,29 @@ export default function ApplicantsPage() {
           </TableHeader>
 
           <TableBody>
-            {applicants.map((applicant) => (
-              <TableRow key={applicant.id}>
-                <TableCell>{applicant.appNo}</TableCell>
-                <TableCell>{applicant.firstName}</TableCell>
-                <TableCell>{applicant.surname}</TableCell>
-                <TableCell>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      applicant.status === "DONE"
-                        ? "bg-green-100 text-green-700"
-                        : applicant.status === "IN_PROGRESS"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {applicant.status}
-                  </span>
-                </TableCell>
-                <TableCell className="capitalize">
-                  {applicant.tokenType}
-                </TableCell>
-              </TableRow>
-            ))}
+            {applicants.map(
+              ({ id, appNo, firstName, surname, status, tokenType }) => (
+                <TableRow key={id}>
+                  <TableCell>{appNo}</TableCell>
+                  <TableCell>{firstName}</TableCell>
+                  <TableCell>{surname}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        status === "DONE"
+                          ? "bg-green-100 text-green-700"
+                          : status === "IN_PROGRESS"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="capitalize">{tokenType}</TableCell>
+                </TableRow>
+              )
+            )}
           </TableBody>
         </Table>
       </div>

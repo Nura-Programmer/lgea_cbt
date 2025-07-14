@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Users, FileText, KeyRound, CircleCheck, CircleX } from "lucide-react";
 import { applicantsExist, questionsExist, tokensExist } from "@/data/mocks";
@@ -28,9 +26,7 @@ const dashboardCards: CardStatus[] = [
     title: "tokens",
     icon: <KeyRound className="h-8 w-8 text-yellow-600" />,
     isReady: tokensExist,
-    statusText: tokensExist
-      ? "Tokens available"
-      : "No tokens! Generate new tokens",
+    statusText: tokensExist ? "Tokens available" : "Generate new tokens",
   },
 ];
 

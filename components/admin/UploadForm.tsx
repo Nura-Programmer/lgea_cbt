@@ -13,9 +13,29 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 
-export default function UploadApplicantsForm() {
+interface UploadFormProps {
+  uploadType: string;
+}
+
+export default function UploadForm({ uploadType }: UploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  const getColFormat = (type: string) => {
+    switch (type) {
+      case "applicants":
+        return "(appNo, firstName, surname)";
+      case "questions":
+        return `('tokenType' [english, arabic], 'question', 'questionType' [objective, multiChoice],
+        'options' [A, B, C, D], 'correctOption' and optional 'marks' default to 1)`;
+      // case "tokens":
+      //   return "(appNo, tokenType)";
+      // case "results":
+      //   return "(appNo, tokenType, score)";
+      default:
+        return "unknown format";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +45,7 @@ export default function UploadApplicantsForm() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("/api/applicants/upload", {
+    const res = await fetch(`/api/${uploadType}/upload`, {
       method: "POST",
       body: formData,
     });
@@ -39,15 +59,16 @@ export default function UploadApplicantsForm() {
     <Dialog>
       <form onSubmit={handleSubmit} className="space-y-4">
         <DialogTrigger asChild>
-          <Button variant="outline">Upload applicants</Button>
+          <Button variant="outline">Upload {uploadType}</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Choose applicants file</DialogTitle>
+            <DialogTitle>Choose {uploadType} file</DialogTitle>
             <DialogDescription>
               Only excel (.xlsx) and CSV (.csv) files are supported. Dont
               include any header row in the file. The columns should be exactly
-              in the form (appNo, firstName, surname)
+              in the form:
+              <br /> <strong>{getColFormat(uploadType)}</strong>.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4">
