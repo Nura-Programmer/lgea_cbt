@@ -1,5 +1,6 @@
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import PrintButton from "@/components/admin/PrintButton";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,9 +9,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { tokens } from "@/data/mocks";
+import { tokens, tokensExist } from "@/data/mocks";
 
 export default function TokensPage() {
+  if (!tokens || !tokensExist) {
+    return (
+      <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
+        <h2 className="text-xl font-semibold text-red-800">
+          No unused tokens found!
+        </h2>
+        <Button variant="outline">Generate Tokens</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
