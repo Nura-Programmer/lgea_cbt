@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +34,16 @@ export default function TestPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [timeLeft, setTimeLeft] = useState(60 * 5); // 5 minutes
 
+  const handleOptionSelect = (qId: number, option: string) => {
+    setAnswers({ ...answers, [qId]: option });
+  };
+
+  const handleSubmit = useCallback(() => {
+    console.log("Submitted answers:", answers);
+    alert("Test submitted!");
+    // TODO: POST to backend
+  }, [answers]);
+
   // Timer countdown
   useEffect(() => {
     const timer = setInterval(() => {
@@ -47,17 +57,7 @@ export default function TestPage() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
-
-  const handleOptionSelect = (qId: number, option: string) => {
-    setAnswers({ ...answers, [qId]: option });
-  };
-
-  const handleSubmit = () => {
-    console.log("Submitted answers:", answers);
-    alert("Test submitted!");
-    // TODO: POST to backend
-  };
+  }, [handleSubmit]);
 
   const currentQuestion = questions[currentIndex];
   const formatTime = (t: number) =>
