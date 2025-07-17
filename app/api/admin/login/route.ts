@@ -1,37 +1,35 @@
 import { prisma } from "@/lib/prisma";
+import { getAdminSession } from "@/lib/withSession";
 import { compare } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
+
+    const BadRequest = NextResponse.json(
+        { error: "Username and password are required." },
+        { status: 400 }
+    );
+
     try {
         const body = await req.json();
         const { username, password } = body;
 
-        if (!username || !password) {
-            return NextResponse.json(
-                { error: "Username and password are required." },
-                { status: 400 }
-            );
-        }
+        if (!username || !password) return BadRequest;
 
         const admin = await prisma.admin.findUnique({
             where: { username },
         });
 
-        if (!admin) {
-            return NextResponse.json(
-                { error: "Invalid username or password." },
-                { status: 401 }
-            );
-        }
+        if (!admin) return BadRequest;
 
         const isPasswordValid = await compare(password, admin.password);
-        if (!isPasswordValid) {
-            return NextResponse.json(
-                { error: "Invalid username or password." },
-                { status: 401 }
-            );
-        }
+        if (!isPasswordValid) return BadRequest;
+
+        // Set session
+        const session = await getAdminSession();
+        session.isAdmin = true;
+        session.adminId = admin.id;
+        await session.save();
 
         // Success
         return NextResponse.json({

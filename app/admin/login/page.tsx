@@ -1,9 +1,7 @@
 import Image from "next/image";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import loginImage from "@/public/images/auth-cover-login-bg.svg";
+import LoginForm from "@/components/admin/LoginForm";
 
 export default function AdminLoginPage() {
   return (
@@ -23,26 +21,7 @@ export default function AdminLoginPage() {
         {/* Right: Login Form */}
         <div className="w-full md:w-1/2 p-8 md:p-10 bg-white">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Admin Login</h2>
-
-          <form className="space-y-5">
-            <div>
-              <Label htmlFor="username" className="mb-2">
-                Username
-              </Label>
-              <Input id="username" type="text" placeholder="admin" />
-            </div>
-
-            <div>
-              <Label htmlFor="password" className="mb-2">
-                Password
-              </Label>
-              <Input id="password" type="password" placeholder="********" />
-            </div>
-
-            <Button type="submit" className="w-full mt-4">
-              Login
-            </Button>
-          </form>
+          <LoginForm />
         </div>
       </Card>
     </div>
