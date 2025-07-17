@@ -3,13 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  KeyRound,
-  UserCircle,
-} from "lucide-react";
+import { LayoutDashboard, Users, FileText, KeyRound } from "lucide-react";
+import AccountSettings from "./AccountSettings";
 
 const navLinks = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -18,7 +13,11 @@ const navLinks = [
   { href: "/admin/tokens", label: "Tokens", icon: KeyRound },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  adminUsername: string;
+}
+
+export default function Sidebar({ adminUsername }: SidebarProps) {
   const pathname = usePathname();
 
   const checkLink = navLinks
@@ -59,10 +58,9 @@ export default function Sidebar() {
         </nav>
 
         {/* Profile Footer */}
-        <div className="p-4 border-t mt-auto flex items-center gap-3">
-          <UserCircle className="h-6 w-6 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Admin</span>
-        </div>
+        <AccountSettings adminUsername={adminUsername} />
+        {/* <div className="p-4 border-t mt-auto flex items-center gap-3">
+        </div> */}
       </aside>
     );
 }

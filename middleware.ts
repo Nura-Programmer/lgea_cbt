@@ -7,7 +7,7 @@ export async function middleware(req: NextRequest) {
     const protectedPaths = ["/admin", "/api/applicants", "/api/questions", "/api/tokens"];
 
     const isProtected = protectedPaths.some((path) =>
-        url.pathname.startsWith(path)
+        url.pathname.startsWith(path) && !url.pathname.startsWith("/admin/login")
     );
 
     if (isProtected && await requireAdmin()) {

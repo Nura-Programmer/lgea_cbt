@@ -29,6 +29,7 @@ export async function POST(req: Request) {
         const session = await getAdminSession();
         session.isAdmin = true;
         session.adminId = admin.id;
+        session.adminUsername = admin.username;
         await session.save();
 
         // Success
