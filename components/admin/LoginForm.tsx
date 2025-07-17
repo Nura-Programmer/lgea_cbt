@@ -18,9 +18,14 @@ export default function LoginForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm<FormData>();
 
-  const onSubmit = async (data) => {
+  interface FormData {
+    username: string;
+    password: string;
+  }
+
+  const onSubmit = async (data: FormData) => {
     try {
       setSubmitting(true);
       setError("");
@@ -31,10 +36,8 @@ export default function LoginForm() {
       else setError("Login failed. Please try again.");
     } catch (err) {
       console.error("Login error:", err);
-      setError(
-        err?.response?.data?.error ||
-          "Login failed. Please check your credentials."
-      );
+      // err?.response?.data?.error ||
+      setError("Login failed. Please check your credentials.");
       // Handle error (e.g., show a notification)
     }
 
