@@ -1,3 +1,5 @@
+"use client";
+
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import UploadForm from "@/components/admin/UploadForm";
 import {
@@ -8,10 +10,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { applicants, applicantsExist } from "@/data/mocks";
+import { fetcher } from "@/lib/fetcher";
+import { Applicant } from "@/lib/generated/prisma";
+import useSWR from "swr";
 
 export default function ApplicantsPage() {
-  if (!applicants || !applicantsExist) {
+  const {
+    data: applicants,
+    isLoading,
+    error,
+  } = useSWR("/api/admin/applicants", fetcher, {
+    refreshInterval: 20000, // Refresh every 20 seconds
+  });
+
+  if (isLoading || error) {
+    return (
+      <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
+        <p className="text-xl font-semibold text-red-800">
+          {isLoading ? "Loading..." : "Unexpected error"}
+        </p>
+      </div>
+    );
+  }
+
+  if (!isLoading && applicants && applicants.length < 1) {
     return (
       <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
         <h2 className="text-xl font-semibold text-red-800">
@@ -42,8 +64,8 @@ export default function ApplicantsPage() {
           </TableHeader>
 
           <TableBody>
-            {applicants.map(
-              ({ id, appNo, firstName, surname, status, tokenType }) => (
+            {(applicants as Applicant[]).map(
+              ({ id, appNo, firstName, surname, status, tokenId }) => (
                 <TableRow key={id}>
                   <TableCell>{appNo}</TableCell>
                   <TableCell>{firstName}</TableCell>
@@ -61,7 +83,8 @@ export default function ApplicantsPage() {
                       {status}
                     </span>
                   </TableCell>
-                  <TableCell className="capitalize">{tokenType}</TableCell>
+                  {/* <TableCell className="capitalize">{tokenType}</TableCell> */}
+                  <TableCell className="capitalize">{tokenId}</TableCell>
                 </TableRow>
               )
             )}
