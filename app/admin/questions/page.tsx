@@ -1,10 +1,41 @@
+"use client";
+
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import UploadForm from "@/components/admin/UploadForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { questions, questionsExist } from "@/data/mocks";
+import { fetcher } from "@/lib/fetcher";
+import useSWR from "swr";
+
+interface Question {
+  correctOption: string;
+  id: number;
+  marks: number;
+  options: string;
+  question: string;
+  questionType: string;
+  tokenType: string;
+}
 
 export default function QuestionsPage() {
-  if (!questions || !questionsExist) {
+  const {
+    data: questions,
+    isLoading,
+    error,
+  } = useSWR("/api/admin/questions", fetcher, {
+    refreshInterval: 20000, // Refresh every 20 seconds
+  });
+
+  if (isLoading || error) {
+    return (
+      <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
+        <p className="text-xl font-semibold text-red-800">
+          {isLoading ? "Loading..." : "Unexpected error"}
+        </p>
+      </div>
+    );
+  }
+
+  if (!isLoading && questions && questions.lenght < 1) {
     return (
       <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
         <h2 className="text-xl font-semibold text-red-800">
@@ -24,7 +55,7 @@ export default function QuestionsPage() {
 
       <ScrollArea className="max-h-[calc(100vh-120px)] overflow-y-auto">
         <ol className="grid lg:grid-cols-2 gap-2 p-4">
-          {questions.map(
+          {(questions as Question[]).map(
             ({ id, questionType, question, options, correctOption }, index) => (
               <li
                 key={id}
@@ -43,17 +74,19 @@ export default function QuestionsPage() {
                   <p className="text-gray-800 text-base leading-relaxed font-medium">
                     {question}
                   </p>
-                  {Object.entries(options).map(([key, option]) => (
-                    <div
-                      key={key}
-                      className="flex items-start gap-2 rounded-lg bg-gray-50 m-2 p-2"
-                    >
-                      <span className="font-semibold text-gray-600">
-                        {key}.
-                      </span>
-                      <span>{option}</span>
-                    </div>
-                  ))}
+                  {Object.entries(JSON.parse(options) as [number, string]).map(
+                    ([key, option]) => (
+                      <div
+                        key={key}
+                        className="flex items-start gap-2 rounded-lg bg-gray-50 m-2 p-2"
+                      >
+                        <span className="font-semibold text-gray-600">
+                          {key}.
+                        </span>
+                        <span>{option}</span>
+                      </div>
+                    )
+                  )}
                 </div>
               </li>
             )
