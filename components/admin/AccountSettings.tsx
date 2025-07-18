@@ -38,9 +38,11 @@ export default function AccountSettings({
       setLoggingOut(true);
       const res = await axios.post("/api/admin/logout");
       if (res.status === 200) {
+        router.push("/admin/login");
+
         toast(res.data.message || "successful", {
           dismissible: true,
-          duration: 10000,
+          duration: 5000,
           position: "top-right",
           // style: {
           //   backgroundColor: "#f0fff4",
@@ -55,7 +57,6 @@ export default function AccountSettings({
             onClick: () => toast.dismiss(),
           },
         });
-        router.push("/admin/login");
       } else {
         console.error("Logout failed:", res.data);
       }

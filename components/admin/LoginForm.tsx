@@ -8,7 +8,13 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { AlertCircleIcon, LoaderIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  CheckCircle2Icon,
+  LoaderIcon,
+  XCircleIcon,
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -32,8 +38,27 @@ export default function LoginForm() {
 
       const res = await axios.post("/api/admin/login", data);
 
-      if (res.status === 200) return router.push("/admin/dashboard");
-      else setError("Login failed. Please try again.");
+      if (res.status === 200) {
+        router.push("/admin/dashboard");
+
+        toast(res.data.message || "successful", {
+          dismissible: true,
+          duration: 5000,
+          position: "top-right",
+          // style: {
+          //   backgroundColor: "#f0fff4",
+          //   color: "#065f46",
+          //   border: "1px solid #bbf7d0",
+          // },
+          description: "You have successfully logged in.",
+          icon: <CheckCircle2Icon className="h-4 w-4 text-green-500" />,
+          richColors: true,
+          action: {
+            label: <XCircleIcon className="h-4 w-4" />,
+            onClick: () => toast.dismiss(),
+          },
+        });
+      } else setError("Login failed. Please try again.");
     } catch (err) {
       console.error("Login error:", err);
       // err?.response?.data?.error ||
