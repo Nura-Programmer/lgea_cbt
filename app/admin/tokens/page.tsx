@@ -1,3 +1,5 @@
+"use client";
+
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import PrintButton from "@/components/admin/PrintButton";
 import { Button } from "@/components/ui/button";
@@ -9,15 +11,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { tokens, tokensExist } from "@/data/mocks";
+import { fetcher } from "@/lib/fetcher";
+import { Token } from "@/lib/generated/prisma";
+import useSWR from "swr";
 
 export default function TokensPage() {
-  if (!tokens || !tokensExist) {
+  const {
+    data: tokens,
+    isLoading,
+    error,
+  } = useSWR("/api/admin/tokens", fetcher, { refreshInterval: 20000 });
+
+  if (isLoading || error) {
     return (
       <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
-        <h2 className="text-xl font-semibold text-red-800">
-          No unused tokens found!
-        </h2>
+        <p className="text-xl font-semibold text-red-800">
+          {isLoading ? "Loading..." : "Unexpected error"}
+        </p>
+      </div>
+    );
+  }
+
+  if (!isLoading && tokens && tokens.length < 1) {
+    return (
+      <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
+        <h2 className="text-xl font-semibold text-red-800">No tokens found!</h2>
         <Button variant="outline">Generate Tokens</Button>
       </div>
     );
@@ -44,7 +62,7 @@ export default function TokensPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tokens.map((token, index) => (
+            {(tokens as Token[]).map((token, index) => (
               <TableRow key={token.id}>
                 <TableCell>{index + 1}</TableCell>
                 <TableCell className="font-mono text-sm">
@@ -54,9 +72,10 @@ export default function TokensPage() {
                   {token.tokenType}
                 </TableCell>
                 <TableCell>
-                  {token.usedBy ? (
+                  {token.used ? (
                     <span className="text-green-600 font-medium">
-                      {token.usedBy}
+                      {/* {token?.applicant?.id} */}
+                      Use
                     </span>
                   ) : (
                     <span className="text-gray-400 italic">Unused</span>
