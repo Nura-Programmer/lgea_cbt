@@ -44,10 +44,75 @@ async function main() {
         correctOption: JSON.stringify("b"),
         marks: 1,
       },
+      {
+        question: "What is the capital of Nigeria?",
+        tokenType: "english",
+        questionType: "objective",
+        correctOption: "B",
+        options: {
+          A: "Lagos",
+          B: "Abuja",
+          C: "Kano",
+          D: "Port Harcourt",
+        },
+      },
+      {
+        question: "Which planet is known as the Red Planet?",
+        tokenType: "english",
+        questionType: "objective",
+        correctOption: "C",
+        options: {
+          A: "Earth",
+          B: "Venus",
+          C: "Mars",
+          D: "Jupiter",
+        },
+      },
+      {
+        question: "What is the chemical symbol for water?",
+        tokenType: "english",
+        questionType: "objective",
+        correctOption: "A",
+        options: {
+          A: "H2O",
+          B: "CO2",
+          C: "O2",
+          D: "NaCl",
+        },
+      },
     ],
     skipDuplicates: true,
   });
 
+  // 4. Applicants
+  await prisma.applicant.createMany({
+    data: [
+      {
+        id: 1,
+        appNo: "SCI001",
+        firstName: "Aisha",
+        surname: "Abdullahi",
+        status: "PENDING",
+      },
+      {
+        id: 2,
+        appNo: "ARA002",
+        firstName: "Yusuf",
+        surname: "Ahmed",
+        status: "DONE",
+        tokenId: 1,
+      },
+      {
+        id: 3,
+        appNo: "SCI003",
+        firstName: "Fatima",
+        surname: "Sani",
+        status: "IN_PROGRESS",
+        tokenId: 2
+      },
+    ],
+    skipDuplicates: true,
+  });
   console.log("✅ Seeding complete.");
 }
 
