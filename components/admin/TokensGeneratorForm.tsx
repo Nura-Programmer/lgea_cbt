@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { LoaderIcon } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
 
 export default function TokenGeneratorForm() {
   const [tokenType, setTokenType] = useState("");
@@ -34,14 +36,21 @@ export default function TokenGeneratorForm() {
     e.preventDefault();
     setLoading(true);
 
-    const res = await fetch("/api/admin/tokens/generate", {
-      method: "POST",
-      body: JSON.stringify({ tokenType, count }),
-      headers: { "Content-Type": "application/json" },
-    });
+    try {
+      const res = await axios.post("/api/admin/tokens/generate", {
+        tokenType,
+        count,
+      });
 
-    const result = await res.json();
-    alert(result.message || result.error);
+      toast(res.data.message || "Successful", {
+        position: "top-right",
+        closeButton: true,
+      });
+    } catch (err) {
+      console.log(err);
+      toast("Unexpected error", { position: "top-right", closeButton: true });
+    }
+
     setLoading(false);
   };
 
