@@ -2,7 +2,8 @@
 
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import PrintButton from "@/components/admin/PrintButton";
-import { Button } from "@/components/ui/button";
+import TokensGeneratorForm from "@/components/admin/TokensGeneratorForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -36,7 +37,7 @@ export default function TokensPage() {
     return (
       <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
         <h2 className="text-xl font-semibold text-red-800">No tokens found!</h2>
-        <Button variant="outline">Generate Tokens</Button>
+        <TokensGeneratorForm />
       </div>
     );
   }
@@ -46,12 +47,13 @@ export default function TokensPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Tokens</h1>
         <div className="flex gap-3">
+          <TokensGeneratorForm />
           <PrintButton />
           <DeleteAllButton delType="tokens" />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border bg-white shadow">
+      <ScrollArea className="max-h-[85vh] overflow-auto rounded-lg border bg-white shadow">
         <Table>
           <TableHeader>
             <TableRow>
@@ -85,7 +87,7 @@ export default function TokensPage() {
             ))}
           </TableBody>
         </Table>
-      </div>
+      </ScrollArea>
     </div>
   );
 }
