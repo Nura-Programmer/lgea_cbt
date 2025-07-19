@@ -4,17 +4,8 @@ import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import UploadForm from "@/components/admin/UploadForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetcher } from "@/lib/fetcher";
+import { Question } from "@/lib/generated/prisma";
 import useSWR from "swr";
-
-interface Question {
-  correctOption: string;
-  id: number;
-  marks: number;
-  options: string;
-  question: string;
-  questionType: string;
-  tokenType: string;
-}
 
 export default function QuestionsPage() {
   const {
@@ -35,7 +26,7 @@ export default function QuestionsPage() {
     );
   }
 
-  if (!isLoading && questions && questions.lenght < 1) {
+  if (!isLoading && questions.lenght < 1) {
     return (
       <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
         <h2 className="text-xl font-semibold text-red-800">
@@ -74,19 +65,19 @@ export default function QuestionsPage() {
                   <p className="text-gray-800 text-base leading-relaxed font-medium">
                     {question}
                   </p>
-                  {Object.entries(JSON.parse(options) as [number, string]).map(
-                    ([key, option]) => (
-                      <div
-                        key={key}
-                        className="flex items-start gap-2 rounded-lg bg-gray-50 m-2 p-2"
-                      >
-                        <span className="font-semibold text-gray-600">
-                          {key}.
-                        </span>
-                        <span>{option}</span>
-                      </div>
-                    )
-                  )}
+                  {Object.entries(
+                    JSON.parse(options as string) as [number, string]
+                  ).map(([key, option]) => (
+                    <div
+                      key={key}
+                      className="flex items-start gap-2 rounded-lg bg-gray-50 m-2 p-2"
+                    >
+                      <span className="font-semibold text-gray-600">
+                        {key}.
+                      </span>
+                      <span>{option}</span>
+                    </div>
+                  ))}
                 </div>
               </li>
             )

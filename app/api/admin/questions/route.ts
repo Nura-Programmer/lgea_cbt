@@ -6,3 +6,12 @@ export async function GET() {
 
     return NextResponse.json(questions);
 }
+
+export async function DELETE() {
+    const deleteQuestions = await prisma.question.deleteMany();
+
+    return NextResponse.json({
+        message: "All questions deleted successful",
+        tokens: deleteQuestions
+    });
+}
