@@ -10,29 +10,38 @@ function generateToken(length = 8) {
     return result;
 }
 
+async function getTokens(type: "english" | "arabic", quantity: number) {
+    const tokens: { token: string; tokenType: "english" | "arabic" }[] = [];
+
+    while (tokens.length < quantity) {
+        const tokenStr = generateToken();
+        const exists = await prisma.token.findUnique({ where: { token: tokenStr } });
+        if (!exists) {
+            tokens.push({ token: tokenStr, tokenType: type });
+        }
+    }
+
+    return tokens;
+}
+
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { tokenType, count } = body;
+        const { engTokenCount, arabTokenCount } = body;
 
-        if (!["english", "arabic"].includes(tokenType)) {
-            return NextResponse.json({ error: "Invalid token type" }, { status: 400 });
+        const engTokenQuantity = parseInt(engTokenCount);
+        if (isNaN(engTokenQuantity) || engTokenQuantity <= 0) {
+            return NextResponse.json({ error: "Invalid English tokens count" }, { status: 400 });
         }
 
-        const tokenCount = parseInt(count);
-        if (isNaN(tokenCount) || tokenCount <= 0) {
-            return NextResponse.json({ error: "Invalid count" }, { status: 400 });
+        const arabTokenQuantity = parseInt(arabTokenCount);
+        if (isNaN(arabTokenQuantity) || arabTokenQuantity <= 0) {
+            return NextResponse.json({ error: "Invalid Arabic tokens count" }, { status: 400 });
         }
 
-        const tokens: { token: string; tokenType: "english" | "arabic" }[] = [];
-
-        while (tokens.length < tokenCount) {
-            const tokenStr = generateToken();
-            const exists = await prisma.token.findUnique({ where: { token: tokenStr } });
-            if (!exists) {
-                tokens.push({ token: tokenStr, tokenType });
-            }
-        }
+        const engTokens = await getTokens("english", engTokenQuantity);
+        const arabTokens = await getTokens("arabic", arabTokenQuantity);
+        const tokens = [...engTokens, ...arabTokens];
 
         const created = await prisma.token.createMany({ data: tokens });
 

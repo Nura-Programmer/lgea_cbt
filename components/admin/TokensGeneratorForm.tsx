@@ -14,22 +14,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { LoaderIcon } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 
 export default function TokenGeneratorForm() {
-  const [tokenType, setTokenType] = useState("");
-  const [count, setCount] = useState("10");
+  const [engTokenCount, setEngTokenCount] = useState("10");
+  const [arabTokenCount, setArabTokenCount] = useState("10");
+
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = async (e: React.FormEvent) => {
@@ -38,8 +30,8 @@ export default function TokenGeneratorForm() {
 
     try {
       const res = await axios.post("/api/admin/tokens/generate", {
-        tokenType,
-        count,
+        arabTokenCount,
+        engTokenCount,
       });
 
       toast(res.data.message || "Successful", {
@@ -67,34 +59,37 @@ export default function TokenGeneratorForm() {
           <DialogHeader>
             <DialogTitle>Generate Tokens</DialogTitle>
             <DialogDescription>
-              Select the type of tokens you want to generate and specify the
-              number of tokens to create.
+              Set the required quantity of each token.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label>Token Type</Label>
-            <Select value={tokenType} onValueChange={setTokenType}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Types</SelectLabel>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="arabic">Arabic</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <Label>English Tokens</Label>
+            <Input
+              type="number"
+              value={engTokenCount}
+              onChange={(e) => setEngTokenCount(e.target.value)}
+              min={1}
+            />
+            {(!engTokenCount || parseInt(engTokenCount) < 1) && (
+              <p className="text-small text-red-500">
+                Number of English tokens is required
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label>Number of Tokens</Label>
+            <Label>Arabic Tokens</Label>
             <Input
               type="number"
-              value={count}
-              onChange={(e) => setCount(e.target.value)}
+              value={arabTokenCount}
+              onChange={(e) => setArabTokenCount(e.target.value)}
               min={1}
             />
+            {(!arabTokenCount || parseInt(arabTokenCount) < 1) && (
+              <p className="text-small text-red-500">
+                Number of Arabic tokens is required
+              </p>
+            )}
           </div>
 
           <DialogFooter>
@@ -103,7 +98,13 @@ export default function TokenGeneratorForm() {
             </DialogClose>
             <Button
               type="submit"
-              disabled={loading || !tokenType || parseInt(count) <= 0}
+              disabled={
+                loading ||
+                !engTokenCount ||
+                !arabTokenCount ||
+                parseInt(engTokenCount) <= 0 ||
+                parseInt(arabTokenCount) <= 0
+              }
             >
               {loading && <LoaderIcon className="animate-spin" />}
               Start Generating
