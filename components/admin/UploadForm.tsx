@@ -68,9 +68,8 @@ export default function UploadForm({ uploadType }: UploadFormProps) {
           <DialogHeader>
             <DialogTitle>Choose {uploadType} file</DialogTitle>
             <DialogDescription>
-              Only excel (.xlsx) and CSV (.csv) files are supported. Dont
-              include any header row in the file. The columns should be exactly
-              in the form:
+              Only excel (.xlsx) file is supported. Dont include any header row
+              in the file. The columns should be exactly in the form:
               <br /> <strong>{getColFormat(uploadType)}</strong>.
             </DialogDescription>
           </DialogHeader>

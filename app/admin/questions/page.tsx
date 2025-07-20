@@ -26,7 +26,7 @@ export default function QuestionsPage() {
     );
   }
 
-  if (!isLoading && questions.lenght < 1) {
+  if (!isLoading && questions && questions.length < 1) {
     return (
       <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
         <h2 className="text-xl font-semibold text-red-800">
@@ -65,15 +65,13 @@ export default function QuestionsPage() {
                   <p className="text-gray-800 text-base leading-relaxed font-medium">
                     {question}
                   </p>
-                  {Object.entries(
-                    JSON.parse(options as string) as [number, string]
-                  ).map(([key, option]) => (
+                  {Object.entries(options as string[]).map(([key, option]) => (
                     <div
                       key={key}
                       className="flex items-start gap-2 rounded-lg bg-gray-50 m-2 p-2"
                     >
                       <span className="font-semibold text-gray-600">
-                        {key}.
+                        {parseInt(key) + 1}.
                       </span>
                       <span>{option}</span>
                     </div>
