@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
       const res = await axios.post("/api/login", data);
 
       if (res.status === 200) {
-        router.push("/test");
+        router.push("/instructions");
 
         toast(res.data.message || "successful", {
           dismissible: true,
