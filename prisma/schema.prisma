@@ -48,6 +48,7 @@ model Token {
 model Question {
   id            Int          @id @default(autoincrement())
   tokenType     TokenType
+  tokenId       Int?         @unique
   question      String
   questionType  QuestionType
   options       Json

@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import axios from "axios";
 
 interface UploadFormProps {
   uploadType: string;
@@ -45,23 +46,25 @@ export default function UploadForm({ uploadType }: UploadFormProps) {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch(`/api/${uploadType}/upload`, {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const res = await axios.post(`/api/admin/${uploadType}/upload`, formData);
 
-    const result = await res.json();
-    alert(result.message || result.error);
+      if (res.status === 200) alert(res.data.message);
+    } catch (error) {
+      console.log(error);
+      alert("Unexpected error occurred");
+    }
+
     setUploading(false);
   };
 
   return (
     <Dialog>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <DialogTrigger asChild>
-          <Button variant="outline">Upload {uploadType}</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+      <DialogTrigger asChild>
+        <Button variant="outline">Upload {uploadType}</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>Choose {uploadType} file</DialogTitle>
             <DialogDescription>
@@ -88,8 +91,8 @@ export default function UploadForm({ uploadType }: UploadFormProps) {
               {uploading ? "Uploading..." : "Upload Applicants"}
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </form>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }
