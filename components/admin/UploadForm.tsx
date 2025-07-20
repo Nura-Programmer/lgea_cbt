@@ -28,7 +28,7 @@ export default function UploadForm({ uploadType }: UploadFormProps) {
         return "(appNo, firstName, surname)";
       case "questions":
         return `('tokenType' [english, arabic], 'question', 'questionType' [objective, multiChoice],
-        'options' [A, B, C, D], 'correctOption' and optional 'marks' default to 1)`;
+        'optionA', optionB, optionC, optionD, 'correctOption')`;
       // case "tokens":
       //   return "(appNo, tokenType)";
       // case "results":

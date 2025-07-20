@@ -21,7 +21,7 @@ export default function TokensPage() {
     data: tokens,
     isLoading,
     error,
-  } = useSWR("/api/admin/tokens", fetcher, { refreshInterval: 20000 });
+  } = useSWR("/api/admin/tokens", fetcher, { refreshInterval: 5000 });
 
   if (isLoading || error) {
     return (

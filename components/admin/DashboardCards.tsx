@@ -31,7 +31,7 @@ const DashboardCards = () => {
     "/api/admin/dashboard/status",
     fetcher,
     {
-      refreshInterval: 20000, // Refresh every 20 seconds
+      refreshInterval: 5000, // Refresh every 5 seconds
     }
   );
 

@@ -13,7 +13,7 @@ export default function QuestionsPage() {
     isLoading,
     error,
   } = useSWR("/api/admin/questions", fetcher, {
-    refreshInterval: 20000, // Refresh every 20 seconds
+    refreshInterval: 5000, // Refresh every 5 seconds
   });
 
   if (isLoading || error) {
