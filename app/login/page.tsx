@@ -29,7 +29,7 @@ interface FormData {
   tokens: string;
 }
 
-export default function AdminLoginPage() {
+export default function ApplicantLoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [isLogin, setIsLogin] = useState(false);
