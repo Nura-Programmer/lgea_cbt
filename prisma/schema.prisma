@@ -30,9 +30,9 @@ model Applicant {
   endTime   DateTime?
   score     Float?
 
-  answers   ApplicantAnswer[]
-  tokenUsed Token?            @relation(fields: [tokenId], references: [id])
-  tokenId   Int?              @unique
+  answers ApplicantAnswer[]
+  token   Token?            @relation(fields: [tokenId], references: [id])
+  tokenId Int?              @unique
 }
 
 model Token {
@@ -50,7 +50,7 @@ model Question {
   tokenType     TokenType
   tokenId       Int?         @unique
   question      String
-  questionType  QuestionType
+  questionType  QuestionType @default(objective)
   options       Json
   correctOption Json
   marks         Int?         @default(1)

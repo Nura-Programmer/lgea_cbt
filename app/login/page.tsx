@@ -50,7 +50,7 @@ export default function ApplicantLoginPage() {
       const res = await axios.post("/api/login", data);
 
       if (res.status === 200) {
-        router.push("/instructions");
+        router.push("/test");
 
         toast(res.data.message || "successful", {
           dismissible: true,

@@ -3,36 +3,28 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
+import { Applicant, Question, Token } from "@/lib/generated/prisma";
+import Instructions from "@/components/Instructions";
 
-// Mock applicant data & questions
-const applicant = {
-  appNo: "SCI102",
-  fullName: "Fatima Yusuf",
-  tokenType: "science",
-};
-
-const questions = [
-  {
-    id: 1,
-    question: "What is the boiling point of water?",
-    options: ["90°C", "100°C", "110°C", "120°C"],
-  },
-  {
-    id: 2,
-    question: "Which organ pumps blood?",
-    options: ["Lungs", "Liver", "Heart", "Kidney"],
-  },
-  {
-    id: 3,
-    question: "Who discovered gravity?",
-    options: ["Einstein", "Newton", "Tesla", "Galileo"],
-  },
-];
+interface Test {
+  applicant: Applicant & Token;
+  questions: Question[];
+  message?: string;
+  error?: string;
+}
 
 export default function TestPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [timeLeft, setTimeLeft] = useState(60 * 5); // 5 minutes
+  const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes
+  const [instructionVisiblity, setInstructionVisiblity] = useState(true);
+  const [examStarted, setExamStarted] = useState(false);
+
+  const { data }: { data: Test } = useSWR("/api/test", fetcher);
+
+  console.log(data);
 
   const handleOptionSelect = (qId: number, option: string) => {
     setAnswers({ ...answers, [qId]: option });
@@ -44,8 +36,14 @@ export default function TestPage() {
     // TODO: POST to backend
   }, [answers]);
 
+  const handleExamStar = useCallback(() => {
+    setInstructionVisiblity(false);
+    setExamStarted(true);
+  }, []);
+
   // Timer countdown
   useEffect(() => {
+    if (!examStarted) return;
     const timer = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
@@ -57,13 +55,37 @@ export default function TestPage() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [handleSubmit]);
+  }, [handleSubmit, examStarted]);
 
-  const currentQuestion = questions[currentIndex];
   const formatTime = (t: number) =>
     `${Math.floor(t / 60)
       .toString()
       .padStart(2, "0")}:${(t % 60).toString().padStart(2, "0")}`;
+
+  if (instructionVisiblity)
+    return (
+      <Instructions
+        visible={!instructionVisiblity}
+        onExamStarted={handleExamStar}
+      />
+    );
+
+  if (!data)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+
+  const { applicant, questions } = data;
+  const { appNo, firstName, surname } = applicant;
+  const token = JSON.stringify(applicant.token);
+
+  const { tokenType } = JSON.parse(token) as Token;
+  // console.log("token", token);
+
+  // const {} = questions;
+  const currentQuestion = questions[currentIndex];
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -76,7 +98,7 @@ export default function TestPage() {
           <p className="text-gray-700 text-lg">{currentQuestion.question}</p>
 
           <div className="space-y-3">
-            {currentQuestion.options.map((opt, idx) => {
+            {(currentQuestion.options as []).map((opt, idx) => {
               const optionId = String.fromCharCode(65 + idx); // A, B, C, D
               return (
                 <div
@@ -122,16 +144,15 @@ export default function TestPage() {
         {/* Applicant Info */}
         <div className="text-sm space-y-1">
           <p>
-            <span className="font-semibold text-gray-600">App No:</span>{" "}
-            {applicant.appNo}
+            <span className="font-semibold text-gray-600">App No:</span> {appNo}
           </p>
           <p>
             <span className="font-semibold text-gray-600">Name:</span>{" "}
-            {applicant.fullName}
+            {firstName} {surname}
           </p>
           <p>
             <span className="font-semibold text-gray-600">Token Type:</span>{" "}
-            {applicant.tokenType}
+            {tokenType || "N/A"}
           </p>
         </div>
 

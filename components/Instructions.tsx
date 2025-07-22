@@ -2,17 +2,20 @@
 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import rocket from "@/public/images/rocket.png";
 import background from "@/public/images/instructions-bg.jpg";
 import clock from "@/public/images/clock.png";
 
-const Instructions = () => {
-  const router = useRouter();
+interface Props {
+  visible: boolean;
+  onExamStarted: () => void;
+}
+
+const Instructions = ({ visible, onExamStarted }: Props) => {
   const [timeLeft, setTimeLeft] = useState(60 * 2); // 2 minutes
 
-  const handleStart = useCallback(() => router.push("/test"), [router]);
+  // const handleStart = useCallback(() => router.push("/test"), [router]);
 
   // Timer countdown
   useEffect(() => {
@@ -20,7 +23,8 @@ const Instructions = () => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          handleStart();
+          // handleStart();
+          onExamStarted();
           return 0;
         }
         return prevTime - 1;
@@ -28,7 +32,7 @@ const Instructions = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [handleStart]);
+  }, [onExamStarted]);
 
   const formatTime = (t: number) =>
     `${Math.floor(t / 60)
@@ -36,7 +40,7 @@ const Instructions = () => {
       .padStart(2, "0")}:${(t % 60).toString().padStart(2, "0")}`;
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <div className="flex h-screen bg-gray-100 overflow-hidden" hidden={visible}>
       {/* Left: Main Question Panel */}
       <div className="hidden md:block flex-1 relative">
         <div className="w-full h-screen blur-xs relative">
@@ -81,10 +85,28 @@ const Instructions = () => {
             <em>Instructions:</em>
           </h2>
           <p className="text-gray-800">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-            Reprehenderit fugiat quis odio cumque nisi, tempora tempore enim quo
-            natus provident modi libero explicabo voluptatibus rerum eligendi
-            doloribus possimus, sint dolores?
+            <ol className="list-decimal list-inside space-y-2 overflow-auto">
+              <li>
+                You will have <strong>2 minutes</strong> to complete the test.
+              </li>
+              <li>
+                The test consists of <strong>10 questions</strong>.
+              </li>
+              <li>
+                Each question is worth <strong>10 points</strong>.
+              </li>
+              <li>You can skip questions and come back later.</li>
+              <li>Once you start, you cannot pause the test.</li>
+              <li>Ensure you have a stable internet connection.</li>
+              <li>
+                Click the <strong>Start Test Now</strong> button to begin.
+              </li>
+              <li>
+                To submit the Test, click the <strong>Submit Test</strong>{" "}
+                button at the bottom-right of the screen.
+              </li>
+              <li>Good luck!</li>
+            </ol>
           </p>
         </div>
 
@@ -93,7 +115,7 @@ const Instructions = () => {
           <Button
             className="max-w-md"
             variant="destructive"
-            onClick={handleStart}
+            onClick={onExamStarted}
           >
             Start Test Now
           </Button>
