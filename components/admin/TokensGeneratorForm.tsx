@@ -39,7 +39,7 @@ export default function TokenGeneratorForm() {
         closeButton: true,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       toast("Unexpected error", { position: "top-right", closeButton: true });
     }
 

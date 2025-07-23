@@ -41,7 +41,7 @@ export default function ApplicantLoginPage() {
     formState: { errors },
   } = useForm<FormData>();
 
-  console.log(errors);
+  // console.log(errors);
 
   const onSubmit = async (data: FormData) => {
     setIsLogin(true);

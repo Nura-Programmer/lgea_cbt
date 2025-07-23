@@ -51,7 +51,7 @@ export default function UploadForm({ uploadType }: UploadFormProps) {
 
       if (res.status === 200) alert(res.data.message);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       alert("Unexpected error occurred");
     }
 

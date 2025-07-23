@@ -66,12 +66,17 @@ export async function POST(req: NextRequest) {
             surname: string;
         }[] = [];
 
-        worksheet.eachRow((row, rowNumber) => {
-            console.log(rowNumber, row.values);
+        // Validate worksheet
+        if (!worksheet || !worksheet.rowCount) {
+            return NextResponse.json({ error: "Invalid or empty Excel file" }, { status: 400 });
+        }
+
+        // worksheet.eachRow contains rows, each row has values 
+        // and rowNumber contains the number of rows in the worksheet
+        worksheet.eachRow((row) => {
             if (!row.values || !Array.isArray(row.values)) return;
 
             const [appNo, firstName, surname] = row.values.slice(1) as FileType;
-            console.log(firstName, surname, appNo);
             applicants.push({
                 appNo: String(appNo),
                 firstName,
