@@ -7,6 +7,9 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { Applicant, Question, Token } from "@/lib/generated/prisma";
 import Instructions from "@/components/Instructions";
+import axios from "axios";
+import { toast } from "sonner";
+import { LoaderIcon, XCircleIcon } from "lucide-react";
 
 interface Test {
   applicant: Applicant & Token;
@@ -21,6 +24,7 @@ export default function TestPage() {
   const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes
   const [instructionVisiblity, setInstructionVisiblity] = useState(true);
   const [examStarted, setExamStarted] = useState(false);
+  const [loadingExam, setLoadingExam] = useState(false);
 
   const { data }: { data: Test } = useSWR("/api/test", fetcher);
 
@@ -36,8 +40,30 @@ export default function TestPage() {
     // TODO: POST to backend
   }, [answers]);
 
-  const handleExamStar = useCallback(() => {
-    setInstructionVisiblity(false);
+  const handleStartExam = useCallback(async () => {
+    setLoadingExam(true);
+
+    try {
+      const res = await axios.get("/api/test?request=startExam");
+
+      toast.success(res.data.message || "Exam started successfully", {
+        duration: 5000,
+        position: "top-right",
+        richColors: true,
+        action: {
+          label: <XCircleIcon className="h-4 w-4 fill-red-500 rounded-full" />,
+          onClick: () => toast.dismiss(),
+        },
+      });
+
+      setLoadingExam(false);
+      setInstructionVisiblity(false);
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Failed to start exam. Please try again later.");
+    }
+
     setExamStarted(true);
   }, []);
 
@@ -66,14 +92,15 @@ export default function TestPage() {
     return (
       <Instructions
         visible={!instructionVisiblity}
-        onExamStarted={handleExamStar}
+        onStartExam={handleStartExam}
+        loading={loadingExam}
       />
     );
 
   if (!data)
     return (
       <div className="flex items-center justify-center h-screen">
-        <p className="text-gray-600">Loading...</p>
+        Loading <LoaderIcon className="ml-2 animate-spin" />
       </div>
     );
 
@@ -82,9 +109,7 @@ export default function TestPage() {
   const token = JSON.stringify(applicant.token);
 
   const { tokenType } = JSON.parse(token) as Token;
-  // console.log("token", token);
 
-  // const {} = questions;
   const currentQuestion = questions[currentIndex];
 
   return (
