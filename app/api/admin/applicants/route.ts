@@ -2,9 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    const applicants = await prisma.applicant.findMany();
+    const applicants = await prisma.applicant.findMany({ include: { token: true } });
 
-    return NextResponse.json(applicants)
+    return NextResponse.json(applicants);
 }
 
 export async function DELETE() {

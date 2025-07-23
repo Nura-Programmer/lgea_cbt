@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { fetcher } from "@/lib/fetcher";
-import { Applicant } from "@/lib/generated/prisma";
+import { Applicant, Token, TokenType } from "@/lib/generated/prisma";
 import useSWR from "swr";
 
 export default function ApplicantsPage() {
@@ -22,6 +22,21 @@ export default function ApplicantsPage() {
   } = useSWR("/api/admin/applicants", fetcher, {
     refreshInterval: 5000, // Refresh every 5 seconds
   });
+
+  const getTokenType = (token: string) => {
+    // If token is null or undefined, return "N/A"
+    if (!token) return "N/A";
+
+    // Some how type script doesn't recognize the type of token as string,
+    // so we stringify it first
+    const tokenStr = JSON.stringify(token);
+
+    // Parse the token string to get the Token object
+    const tokenObj = JSON.parse(tokenStr) as Token;
+    const tokenType = tokenObj.tokenType as TokenType;
+
+    return tokenType;
+  };
 
   if (isLoading || error) {
     return (
@@ -64,8 +79,8 @@ export default function ApplicantsPage() {
           </TableHeader>
 
           <TableBody>
-            {(applicants as Applicant[]).map(
-              ({ id, appNo, firstName, surname, status, tokenId }) => (
+            {(applicants as (Applicant & Token)[]).map(
+              ({ id, appNo, firstName, surname, status, token }) => (
                 <TableRow key={id}>
                   <TableCell>{appNo}</TableCell>
                   <TableCell>{firstName}</TableCell>
@@ -83,8 +98,17 @@ export default function ApplicantsPage() {
                       {status}
                     </span>
                   </TableCell>
-                  {/* <TableCell className="capitalize">{tokenType}</TableCell> */}
-                  <TableCell className="capitalize">{tokenId}</TableCell>
+                  <TableCell className="capitalize">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        token
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-700 italic"
+                      }`}
+                    >
+                      {getTokenType(token)}
+                    </span>
+                  </TableCell>
                 </TableRow>
               )
             )}

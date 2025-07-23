@@ -75,10 +75,7 @@ export default function TokensPage() {
                 </TableCell>
                 <TableCell>
                   {token.used ? (
-                    <span className="text-green-600 font-medium">
-                      {/* {token?.applicant?.id} */}
-                      Use
-                    </span>
+                    <span className="text-green-600 font-medium">Used</span>
                   ) : (
                     <span className="text-gray-400 italic">Unused</span>
                   )}
