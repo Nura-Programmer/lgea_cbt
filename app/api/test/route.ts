@@ -42,3 +42,28 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: "Exam started successfully", applicant });
     }
 }
+
+export async function POST(req: NextRequest) {
+    const session = await getApplicantSession();
+    const { appNo, tokenId } = session;
+
+    if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+
+    const body = await req.json();
+    const { answers } = body;
+
+    if (!answers) return NextResponse.json({ error: "Error sumitting" }, { status: 401 });
+
+    // TODO: Calculate applicant score
+
+    // TODO: Update applicant answers
+
+
+    await prisma.applicant.update({
+        where: { appNo, tokenId },
+        data: { status: "DONE", endTime: new Date() } // TODO: Update applicant score here
+    });
+
+    session.destroy();
+    return NextResponse.json({ message: "Exam submitted successfully" });
+}

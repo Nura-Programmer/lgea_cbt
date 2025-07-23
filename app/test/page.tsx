@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+// import useSWR from "swr";
+// import { fetcher } from "@/lib/fetcher";
 import { Applicant, Question, Token } from "@/lib/generated/prisma";
 import Instructions from "@/components/Instructions";
 import axios from "axios";
 import { toast } from "sonner";
 import { LoaderIcon, XCircleIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Test {
   applicant: Applicant & Token;
@@ -19,26 +20,53 @@ interface Test {
 }
 
 export default function TestPage() {
+  const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes
   const [instructionVisiblity, setInstructionVisiblity] = useState(true);
   const [examStarted, setExamStarted] = useState(false);
+  const [submittingExam, setSubmittingExam] = useState(false);
   const [loadingExam, setLoadingExam] = useState(false);
+  const [data, setData] = useState<Test>();
 
-  const { data }: { data: Test } = useSWR("/api/test", fetcher);
+  // TODO: Frequently update applicant's test state
+  // const { data }: { data: Test } = useSWR("/api/test", fetcher);
 
-  console.log(data);
+  if (!data) {
+    (async () => {
+      const { data }: { data: Test } = await axios.get("/api/test");
+
+      setData(data);
+    })();
+  }
 
   const handleOptionSelect = (qId: number, option: string) => {
     setAnswers({ ...answers, [qId]: option });
   };
 
-  const handleSubmit = useCallback(() => {
-    console.log("Submitted answers:", answers);
-    alert("Test submitted!");
-    // TODO: POST to backend
-  }, [answers]);
+  const handleSubmit = useCallback(async () => {
+    setSubmittingExam(true);
+
+    try {
+      const res = await axios.post("/api/test", { answers });
+
+      if (res.status === 200) {
+        toast.success(res.data.message);
+        router.push("/submitted");
+      } else {
+        toast.info("Unexpected Error!", {
+          description: "Unable to submit your Test",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Failed to submit exam. Please try again later.");
+    }
+
+    setSubmittingExam(false);
+  }, [answers, router]);
 
   const handleStartExam = useCallback(async () => {
     setLoadingExam(true);
@@ -213,8 +241,19 @@ export default function TestPage() {
         </div>
 
         {/* Submit Button */}
-        <Button className="w-full mt-6" onClick={handleSubmit}>
-          Submit Test
+        <Button
+          className="w-full mt-6"
+          onClick={handleSubmit}
+          disabled={submittingExam}
+        >
+          {submittingExam ? (
+            <>
+              Test Submitting
+              <LoaderIcon className="ml-2 animate-spin" />
+            </>
+          ) : (
+            "Submit Test"
+          )}
         </Button>
       </div>
     </div>
