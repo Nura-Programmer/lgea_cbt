@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
         }
     });
 
-    // session.destroy();
+    session.destroy();
     return NextResponse.json({ message: "Exam submitted successfully" });
 }
 
