@@ -75,12 +75,13 @@ export default function ApplicantsPage() {
               <TableHead>Surname</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Token Type</TableHead>
+              <TableHead>Test Score</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {(applicants as (Applicant & Token)[]).map(
-              ({ id, appNo, firstName, surname, status, token }) => (
+              ({ id, appNo, firstName, surname, status, token, score }) => (
                 <TableRow key={id}>
                   <TableCell>{appNo}</TableCell>
                   <TableCell>{firstName}</TableCell>
@@ -109,6 +110,7 @@ export default function ApplicantsPage() {
                       {getTokenType(token)}
                     </span>
                   </TableCell>
+                  <TableCell>{score ? score : "N/A"}</TableCell>
                 </TableRow>
               )
             )}
