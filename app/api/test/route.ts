@@ -56,23 +56,49 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     const session = await getApplicantSession();
-    const { appNo, tokenId } = session;
+    const { appNo, id, tokenId } = session;
 
     if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
     const body = await req.json();
-    const { answers } = body;
+    const { answers }: { answers: Record<number, string> } = body;
 
     if (!answers) return NextResponse.json({ error: "Error sumitting" }, { status: 401 });
 
-    // TODO: Calculate applicant score
+    // Search through the answers and update the ApplicantAnswer records
+    await Promise.all(
+        Object.entries(answers).map(async ([questionId, selectedOption]) => {
+            // check if selectedOption is correct
+            // and Update ApplicantAnswer
+            await prisma.applicantAnswer.updateMany({
+                where: { applicantId: id, questionId: parseInt(questionId) },
+                data: {
+                    selected: selectedOption,
+                    isCorrect: (await prisma.question.findUnique({
+                        where: { id: parseInt(questionId) },
+                        select: { correctOption: true }
+                    }))?.correctOption?.toString().toLowerCase() === selectedOption.toLowerCase()
+                }
+            });
+        })
+    );
 
-    // TODO: Update applicant answers
+    // TODO: Calculate applicant score
+    const score = await prisma.applicantAnswer.aggregate({
+        _count: {
+            isCorrect: true
+        },
+        where: { applicantId: id }
+    });
 
 
     await prisma.applicant.update({
         where: { appNo, tokenId },
-        data: { status: "DONE", endTime: new Date() } // TODO: Update applicant score here
+        data: {
+            status: "DONE",
+            endTime: new Date(),
+            score: score._count.isCorrect // Assuming each question carry 1 mark
+        }
     });
 
     // session.destroy();
@@ -86,18 +112,24 @@ export async function PATCH(req: NextRequest) {
     if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
     const body = await req.json();
-    const answers = body.answers as Record<number, string>;
+    const { answers }: { answers: Record<number, string> } = body;
 
     if (!answers) return NextResponse.json({ error: "No answers provided." });
 
     // Search through the answers and update the ApplicantAnswer records
     await Promise.all(
         Object.entries(answers).map(async ([questionId, selectedOption]) => {
-
-            // Update ApplicantAnswer
+            // check if selectedOption is correct
+            // and Update ApplicantAnswer
             await prisma.applicantAnswer.updateMany({
                 where: { applicantId: id, questionId: parseInt(questionId) },
-                data: { selected: selectedOption }
+                data: {
+                    selected: selectedOption,
+                    isCorrect: (await prisma.question.findUnique({
+                        where: { id: parseInt(questionId) },
+                        select: { correctOption: true }
+                    }))?.correctOption?.toString().toLowerCase() === selectedOption.toLowerCase()
+                }
             });
         })
     );
