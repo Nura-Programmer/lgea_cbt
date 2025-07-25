@@ -29,16 +29,18 @@ export default function TestPage() {
   const [submittingExam, setSubmittingExam] = useState(false);
   const [loadingExam, setLoadingExam] = useState(false);
   const [data, setData] = useState<Test>();
+  const [isDataRequested, setIsDataRequested] = useState(false);
 
   // TODO: Frequently update applicant's test state
   // const { data }: { data: Test } = useSWR("/api/test", fetcher);
 
-  if (!data) {
+  if (!isDataRequested) {
     (async () => {
       const { data }: { data: Test } = await axios.get("/api/test");
-
       setData(data);
     })();
+
+    setIsDataRequested(true);
   }
 
   const handleOptionSelect = (qId: number, option: string) => {
