@@ -25,6 +25,17 @@ export async function GET(req: NextRequest) {
 
         await prisma.applicant.update({ where: { appNo }, data: { status: "IN_PROGRESS" } });
 
+        // Create ApplicantAnswer record of the current applicant
+        // to be updated on every users patch request
+        const answers = questions.map(question => ({
+            applicantId: applicant.id,
+            questionId: question.id,
+            selected: null
+        }));
+
+        // Create ApplicantAnswer records in bulk
+        await prisma.applicantAnswer.createMany({ data: answers as [] });
+
         await setApplicantSession({ ...applicant, token: applicant.token as Token });
 
         return NextResponse.json({ message: "Successful", applicant, questions });
@@ -64,6 +75,32 @@ export async function POST(req: NextRequest) {
         data: { status: "DONE", endTime: new Date() } // TODO: Update applicant score here
     });
 
-    session.destroy();
+    // session.destroy();
     return NextResponse.json({ message: "Exam submitted successfully" });
+}
+
+export async function PATCH(req: NextRequest) {
+    const session = await getApplicantSession();
+    const { appNo, id, tokenId } = session;
+
+    if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+
+    const body = await req.json();
+    const answers = body.answers as Record<number, string>;
+
+    if (!answers) return NextResponse.json({ error: "No answers provided." });
+
+    // Search through the answers and update the ApplicantAnswer records
+    await Promise.all(
+        Object.entries(answers).map(async ([questionId, selectedOption]) => {
+
+            // Update ApplicantAnswer
+            await prisma.applicantAnswer.updateMany({
+                where: { applicantId: id, questionId: parseInt(questionId) },
+                data: { selected: selectedOption }
+            });
+        })
+    );
+
+    return NextResponse.json(null);
 }

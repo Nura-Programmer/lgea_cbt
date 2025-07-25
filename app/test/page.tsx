@@ -100,6 +100,7 @@ export default function TestPage() {
   // Timer countdown
   useEffect(() => {
     if (!examStarted) return;
+
     const timer = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
@@ -110,8 +111,22 @@ export default function TestPage() {
         return t - 1;
       });
     }, 1000);
+
     return () => clearInterval(timer);
   }, [handleSubmit, examStarted]);
+
+  // Saving test state in real time
+  useEffect(() => {
+    if (!examStarted) return;
+
+    const timer = setInterval(async () => {
+      const res = await axios.patch("/api/test", { answers });
+
+      console.log(res);
+    }, 5000); //Save every 5 seconds
+
+    return () => clearInterval(timer);
+  }, [answers, examStarted]);
 
   const formatTime = (t: number) =>
     `${Math.floor(t / 60)
