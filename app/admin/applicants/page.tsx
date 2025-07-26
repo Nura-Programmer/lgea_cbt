@@ -2,6 +2,7 @@
 
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import UploadForm from "@/components/admin/UploadForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -66,7 +67,7 @@ export default function ApplicantsPage() {
         <DeleteAllButton delType="applicants" />
       </div>
 
-      <div className="rounded-lg border bg-white">
+      <ScrollArea className="max-h-[calc(100vh-120px)] overflow-auto rounded-lg border bg-white shadow">
         <Table>
           <TableHeader>
             <TableRow>
@@ -116,7 +117,7 @@ export default function ApplicantsPage() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </ScrollArea>
     </div>
   );
 }

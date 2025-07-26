@@ -53,7 +53,7 @@ export default function TokensPage() {
         </div>
       </div>
 
-      <ScrollArea className="max-h-[85vh] overflow-auto rounded-lg border bg-white shadow">
+      <ScrollArea className="max-h-[calc(100vh-120px)] overflow-auto rounded-lg border bg-white shadow">
         <Table>
           <TableHeader>
             <TableRow>

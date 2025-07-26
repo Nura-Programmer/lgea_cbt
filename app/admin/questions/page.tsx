@@ -44,7 +44,7 @@ export default function QuestionsPage() {
         <DeleteAllButton delType="questions" />
       </div>
 
-      <ScrollArea className="max-h-[calc(100vh-120px)] overflow-y-auto">
+      <ScrollArea className="max-h-[calc(100vh-120px)] overflow-auto rounded-lg border bg-white shadow">
         <ol className="grid lg:grid-cols-2 gap-2 p-4">
           {(questions as Question[]).map(
             ({ id, questionType, question, options, correctOption }, index) => (
