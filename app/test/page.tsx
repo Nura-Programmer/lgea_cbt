@@ -13,7 +13,8 @@ import { LoaderIcon, XCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Test {
-  applicant: Applicant & Token;
+  applicant: Applicant;
+  token: Token;
   questions: Question[];
   message?: string;
   error?: string;
@@ -75,7 +76,7 @@ export default function TestPage() {
 
     try {
       const res = await axios.get("/api/test?request=startExam");
-
+      // console.log("================start test", res);
       toast.success(res.data.message || "Exam started successfully", {
         duration: 5000,
         position: "top-right",
@@ -123,10 +124,12 @@ export default function TestPage() {
       const res = await axios.patch("/api/test", { answers });
 
       console.log(res);
+
+      if (!data && res.status === 200) setData(res.data);
     }, 5000); //Save every 5 seconds
 
     return () => clearInterval(timer);
-  }, [answers, examStarted]);
+  }, [answers, data, examStarted]);
 
   const formatTime = (t: number) =>
     `${Math.floor(t / 60)
@@ -149,11 +152,9 @@ export default function TestPage() {
       </div>
     );
 
-  const { applicant, questions } = data;
+  const { applicant, questions, token } = data;
   const { appNo, firstName, surname } = applicant;
-  const token = JSON.stringify(applicant.token);
-
-  const { tokenType } = JSON.parse(token) as Token;
+  const { tokenType } = token;
 
   const currentQuestion = questions[currentIndex];
 

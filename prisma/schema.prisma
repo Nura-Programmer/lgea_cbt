@@ -64,7 +64,7 @@ model ApplicantAnswer {
   applicantId Int
   question    Question  @relation(fields: [questionId], references: [id])
   questionId  Int
-  selected    Json
+  selected    Json?
   isCorrect   Boolean?
 }
 

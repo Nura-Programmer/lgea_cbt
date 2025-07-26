@@ -8,8 +8,6 @@ export async function POST(req: NextRequest) {
         { error: "All fields are required" }, { status: 400 }
     );
 
-
-
     try {
         const body = await req.json();
         const { appNo, tokens } = body;
@@ -26,14 +24,15 @@ export async function POST(req: NextRequest) {
         applicant = await prisma.applicant.update({ where: { appNo }, data: { tokenId: token.id }, include: { token: true } });
         await prisma.token.update({ where: { id: token.id }, data: { used: true }, include: { applicant: true } });
 
-        // Set session
-        await setApplicantSession({ ...applicant, token });
+        // Set session applicant and tokens
+        // Questions will be set after the user actually start the test
+        await setApplicantSession(applicant, token);
 
         return NextResponse.json({
             message: "Login successful",
             applicant,
             token
-        })
+        });
 
     } catch (error) {
         console.error("Applicant login error: ", error);
