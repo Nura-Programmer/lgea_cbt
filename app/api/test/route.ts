@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getApplicantSession, setApplicantSession } from "@/lib/withSession";
 import { NextRequest, NextResponse } from "next/server";
 
+const QUESTIONS_LIMIT = 3; // Limit to 3 questions per applicant
+
 export async function GET(req: NextRequest) {
 
     const session = await getApplicantSession();
@@ -10,31 +12,37 @@ export async function GET(req: NextRequest) {
 
     if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
-    const applicant = await prisma.applicant.findUnique({ where: { appNo, tokenId }, include: { token: true } });
+    let applicant = await prisma.applicant.findUnique({ where: { appNo, tokenId }, include: { token: true } });
 
     if (!applicant) return NextResponse.redirect("/login");
 
     const requestType = req.nextUrl.searchParams.get("request");
 
     if (!requestType) {
-        const questions = await prisma.question.findMany({
+        let questions = await prisma.question.findMany({
             where: { tokenType: applicant.token?.tokenType },
-            orderBy: { id: "asc" },
-            take: 3, // Limit to 3 questions
         });
 
-        await prisma.applicant.update({ where: { appNo }, data: { status: "IN_PROGRESS" } });
+        if (questions.length < 1) return NextResponse.json(
+            { error: "No questions found for this token type." },
+            { status: 404 }
+        );
+
+        // shauffle the questions and Get the first [QUESTIONS_LIMIT] questions
+        questions = [...questions.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_LIMIT)];
 
         // Create ApplicantAnswer record of the current applicant
         // to be updated on every users patch request
         const answers = questions.map(question => ({
-            applicantId: applicant.id,
+            applicantId: applicant?.id,
             questionId: question.id,
             selected: null
         }));
 
         // Create ApplicantAnswer records in bulk
         await prisma.applicantAnswer.createMany({ data: answers as [] });
+
+        applicant = await prisma.applicant.update({ where: { appNo }, data: { status: "IN_PROGRESS" }, include: { token: true } });
 
         await setApplicantSession({ ...applicant, token: applicant.token as Token });
 
