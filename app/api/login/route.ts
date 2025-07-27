@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
         if (!token) return BadRequest;
 
         // update
-        applicant = await prisma.applicant.update({ where: { appNo }, data: { tokenId: token.id }, include: { token: true } });
-        await prisma.token.update({ where: { id: token.id }, data: { used: true }, include: { applicant: true } });
+        applicant = await prisma.applicant.update({ where: { appNo }, data: { tokenId: token.id } });
+        await prisma.token.update({ where: { id: token.id }, data: { used: true } });
 
         // Set session applicant and tokens
         // Questions will be set after the user actually start the test

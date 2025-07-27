@@ -21,11 +21,15 @@ export async function getApplicantSession() {
 export async function setApplicantSession(applicant: Applicant, token?: Token, questions?: Question[]) {
     const session = await getApplicantSession();
 
+    const quest = questions?.map(({ id, correctOption, questionType, marks }) =>
+        ({ id, correctOption, questionType, marks })
+    );
+
     Object.assign(session, {
         isAdmin: false,
         applicant,
-        token: token ?? session?.token ?? null,
-        questions: questions ?? session?.questions ?? null,
+        token,
+        questions: quest ? quest : session?.questions
     });
 
     return await session.save();

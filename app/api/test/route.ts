@@ -1,6 +1,5 @@
-import { Question } from "@/lib/generated/prisma";
 import { prisma } from "@/lib/prisma";
-import { ApplicantSession } from "@/lib/session";
+import { QuestionSession } from "@/lib/session";
 import { getApplicantSession, setApplicantSession } from "@/lib/withSession";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -17,7 +16,6 @@ export async function GET(req: NextRequest) {
     if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
     // let applicant = await prisma.applicant.findUnique({ where: { appNo, tokenId }, include: { token: true } });
-
 
     const requestType = req.nextUrl.searchParams.get("request");
 
@@ -44,11 +42,19 @@ export async function GET(req: NextRequest) {
         // Create ApplicantAnswer records in bulk
         await prisma.applicantAnswer.createMany({ data: answers as [] });
 
-        const applicant = await prisma.applicant.update({ where: { appNo }, data: { status: "IN_PROGRESS" }, include: { token: true } });
+        const applicant = await prisma.applicant.update({
+            where: { appNo },
+            data: { status: "IN_PROGRESS" }
+        });
 
         await setApplicantSession(applicant, session.token, questions);
 
-        return NextResponse.json({ message: "Successful", applicant, questions });
+        return NextResponse.json({
+            message: "Successful",
+            applicant,
+            token: session.token,
+            questions
+        });
     }
 
     if (requestType === "startExam") {
@@ -77,7 +83,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     const session = await getApplicantSession();
-    const { appNo, id, tokenId } = session.applicant;
+    const { applicant, questions } = session;
+    const { appNo, id, tokenId } = applicant;
 
     if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
@@ -87,7 +94,7 @@ export async function POST(req: NextRequest) {
     if (!answers) return NextResponse.json({ error: "Error sumitting" }, { status: 401 });
 
     // Search through the answers and update the ApplicantAnswer records
-    await updateApplicantAnswers(answers, id, session);
+    await updateApplicantAnswers(answers, id, questions as QuestionSession[]);
 
     // TODO: Calculate applicant score
     const score = await prisma.applicantAnswer.aggregate({
@@ -121,7 +128,8 @@ export async function PATCH(req: NextRequest) {
     if (!answers) return NextResponse.json({ error: "No answers provided." });
 
     // Search through the answers and update the ApplicantAnswer records
-    await updateApplicantAnswers(answers, id, session);
+    const que = session.questions as QuestionSession[];
+    await updateApplicantAnswers(answers, id, que);
 
     return NextResponse.json({
         applicant: session.applicant,
@@ -130,21 +138,21 @@ export async function PATCH(req: NextRequest) {
     });
 }
 
-const isCorrectSelection = (questions: Question[], questionId: string, selectedOption: string) => {
+const isCorrectSelection = (questions: QuestionSession[], questionId: string, selectedOption: string) => {
     const question = questions.find(q => q.id === parseInt(questionId));
     return question?.correctOption?.toString().toLowerCase() === selectedOption.toLowerCase();
 }
 
-const updateApplicantAnswers = async (answers: Record<number, string>, id: number, session: ApplicantSession) => {
+const updateApplicantAnswers = async (answers: Record<number, string>, id: number, questions: QuestionSession[]) => {
     await Promise.all(
         Object.entries(answers).map(async ([questionId, selectedOption]) => {
             // check if selectedOption is correct and Update ApplicantAnswer
-            if (session?.questions)
+            if (questions)
                 await prisma.applicantAnswer.updateMany({
                     where: { applicantId: id, questionId: parseInt(questionId) },
                     data: {
                         selected: selectedOption,
-                        isCorrect: isCorrectSelection(session.questions, questionId, selectedOption)
+                        isCorrect: isCorrectSelection(questions, questionId, selectedOption)
                     }
                 });
         })

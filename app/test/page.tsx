@@ -36,12 +36,17 @@ export default function TestPage() {
   // const { data }: { data: Test } = useSWR("/api/test", fetcher);
 
   if (!isDataRequested) {
-    (async () => {
-      const { data }: { data: Test } = await axios.get("/api/test");
-      setData(data);
-    })();
+    try {
+      (async () => {
+        const { data }: { data: Test } = await axios.get("/api/test");
+        setData(data);
+      })();
 
-    setIsDataRequested(true);
+      setIsDataRequested(true);
+    } catch (err) {
+      console.error(err);
+      toast.error("Unexpected error occur.");
+    }
   }
 
   const handleOptionSelect = (qId: number, option: string) => {
