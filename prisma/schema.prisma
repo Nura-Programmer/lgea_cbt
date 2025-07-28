@@ -31,7 +31,7 @@ model Applicant {
   score     Float?
 
   answers ApplicantAnswer[]
-  token   Token?            @relation(fields: [tokenId], references: [id])
+  token   Token?            @relation(fields: [tokenId], references: [id], onDelete: SetNull)
   tokenId Int?              @unique
 }
 
@@ -60,9 +60,9 @@ model Question {
 
 model ApplicantAnswer {
   id          Int       @id @default(autoincrement())
-  applicant   Applicant @relation(fields: [applicantId], references: [id])
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   applicantId Int
-  question    Question  @relation(fields: [questionId], references: [id])
+  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
   questionId  Int
   selected    Json?
   isCorrect   Boolean?
