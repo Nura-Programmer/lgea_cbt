@@ -9,8 +9,9 @@ import { Applicant, Question, Token } from "@/lib/generated/prisma";
 import Instructions from "@/components/Instructions";
 import axios from "axios";
 import { toast } from "sonner";
-import { LoaderIcon, XCircleIcon } from "lucide-react";
+import { Loader2Icon, LoaderIcon, XCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import ConfirmSubmitBtn from "@/components/ConfirmSubmitBtn";
 
 interface Test {
   applicant: Applicant;
@@ -27,7 +28,6 @@ export default function TestPage() {
   const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes
   const [instructionVisiblity, setInstructionVisiblity] = useState(true);
   const [examStarted, setExamStarted] = useState(false);
-  const [submittingExam, setSubmittingExam] = useState(false);
   const [loadingExam, setLoadingExam] = useState(false);
   const [data, setData] = useState<Test>();
   const [isDataRequested, setIsDataRequested] = useState(false);
@@ -54,7 +54,15 @@ export default function TestPage() {
   };
 
   const handleSubmit = useCallback(async () => {
-    setSubmittingExam(true);
+    const toadDelId = toast.loading(
+      <>
+        Submitting <Loader2Icon className="animate-spin ml-2" />
+      </>,
+      {
+        onDismiss: () => toast.dismiss(),
+        position: "top-right",
+      }
+    );
 
     try {
       const res = await axios.post("/api/test", { answers });
@@ -73,7 +81,7 @@ export default function TestPage() {
       toast.error("Failed to submit exam. Please try again later.");
     }
 
-    setSubmittingExam(false);
+    toast.dismiss(toadDelId);
   }, [answers, router]);
 
   const handleStartExam = useCallback(async () => {
@@ -264,20 +272,7 @@ export default function TestPage() {
         </div>
 
         {/* Submit Button */}
-        <Button
-          className="w-full mt-6"
-          onClick={handleSubmit}
-          disabled={submittingExam}
-        >
-          {submittingExam ? (
-            <>
-              Test Submitting
-              <LoaderIcon className="ml-2 animate-spin" />
-            </>
-          ) : (
-            "Submit Test"
-          )}
-        </Button>
+        <ConfirmSubmitBtn onConfirmSubmit={handleSubmit} />
       </div>
     </div>
   );
