@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { toast } from "sonner";
+import { LoaderIcon } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -12,7 +15,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import axios from "axios";
 
 interface UploadFormProps {
   uploadType: string;
@@ -49,10 +51,13 @@ export default function UploadForm({ uploadType }: UploadFormProps) {
     try {
       const res = await axios.post(`/api/admin/${uploadType}/upload`, formData);
 
-      if (res.status === 200) alert(res.data.message);
+      if (res.status === 200)
+        toast.success(res.data.message, {
+          position: "top-right",
+        });
     } catch (error) {
       console.error(error);
-      alert("Unexpected error occurred");
+      toast.error("Unexpected error occurred", { position: "top-right" });
     }
 
     setUploading(false);
@@ -87,7 +92,13 @@ export default function UploadForm({ uploadType }: UploadFormProps) {
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button type="submit" disabled={uploading || !file}>
-              {uploading ? "Uploading..." : "Upload Applicants"}
+              {uploading ? (
+                <>
+                  Uploading <LoaderIcon className="animate-spin ml-2" />
+                </>
+              ) : (
+                "Upload Applicants"
+              )}
             </Button>
           </DialogFooter>
         </form>
