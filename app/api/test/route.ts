@@ -91,24 +91,22 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { answers }: { answers: Record<number, string> } = body;
 
-    if (!answers) return NextResponse.json({ error: "Error sumitting" }, { status: 401 });
+    if (!answers) return NextResponse.json({ error: "Error submitting" }, { status: 401 });
 
     // Search through the answers and update the ApplicantAnswer records
     await updateApplicantAnswers(answers, id, questions as QuestionSession[]);
 
-    // TODO: Calculate applicant score
-    const score = await prisma.applicantAnswer.aggregate({
-        _count: { isCorrect: true },
-        where: { applicantId: id }
+    // Calculate applicant score based on the actual count of isCorrect in the database
+    const score = await prisma.applicantAnswer.count({
+        where: { applicantId: id, isCorrect: true }
     });
-
 
     await prisma.applicant.update({
         where: { appNo, tokenId },
         data: {
             status: "DONE",
             endTime: new Date(),
-            score: score._count.isCorrect // Assuming each question carry 1 mark
+            score // Save the actual count of correct answers as the score
         }
     });
 
