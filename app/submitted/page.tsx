@@ -6,9 +6,9 @@ const SubmittedPage = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="max-w-md h-80 flex flex-col items-center justify-center bg-gray-50">
-        <CheckCircleIcon className="w-16 h-16 text-green-500 mt-4" />
-        <CardTitle>
-          <h1 className="text-4xl mb-4 text-gray-800">Submission Successful</h1>
+        <CardTitle className="flex flex-col items-center space-y-2">
+          <CheckCircleIcon className="w-16 h-16 text-green-500 animate-caret-blink" />
+          <h1 className="text-2xl text-gray-800">Submission Successful</h1>
         </CardTitle>
         <CardContent>
           <p className="text-lg text-gray-700">

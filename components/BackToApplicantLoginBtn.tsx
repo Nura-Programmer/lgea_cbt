@@ -8,8 +8,8 @@ const BackToApplicantLoginBtn = () => {
 
   return (
     <Button
-      variant="outline"
-      className="w-full mt-4 bg-red-500 text-white hover:bg-red-700 hover:text-white"
+      variant="destructive"
+      className="hover:bg-red-700 hover:cursor-pointer"
       size="lg"
       onClick={() => router.push("/login")}
     >
