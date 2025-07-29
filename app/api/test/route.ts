@@ -1,3 +1,4 @@
+import { Question } from "@/lib/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { QuestionSession } from "@/lib/session";
 import { getApplicantSession, setApplicantSession } from "@/lib/withSession";
@@ -18,6 +19,7 @@ export async function GET(req: NextRequest) {
     // let applicant = await prisma.applicant.findUnique({ where: { appNo, tokenId }, include: { token: true } });
 
     const requestType = req.nextUrl.searchParams.get("request");
+    const questions = await getApplicantQuestions(session.questions);
 
     if (!requestType && status !== "IN_PROGRESS") {
         let questions = await prisma.question.findMany({
@@ -69,7 +71,7 @@ export async function GET(req: NextRequest) {
             message: "Exam started successfully",
             applicant,
             token: session.token,
-            questions: session.questions
+            questions
         });
     }
 
@@ -77,7 +79,7 @@ export async function GET(req: NextRequest) {
         message: "Session restored.",
         applicant: session.applicant,
         token: session.token,
-        questions: session.questions
+        questions
     });
 }
 
@@ -128,14 +130,19 @@ export async function PATCH(req: NextRequest) {
     if (!answers) return NextResponse.json({ error: "No answers provided." });
 
     // Search through the answers and update the ApplicantAnswer records
-    const que = session.questions as QuestionSession[];
-    await updateApplicantAnswers(answers, id, que);
+    await updateApplicantAnswers(answers, id, session.questions as QuestionSession[]);
 
     return NextResponse.json({
         applicant: session.applicant,
         token: session.token,
-        questions: session.questions
+        questions: getApplicantQuestions(session.questions)
     });
+}
+
+const getApplicantQuestions = async (questions: Question[]) => {
+    return await Promise.all(
+        questions.map(async question => await prisma.question.findUnique({ where: { id: question.id } }))
+    );
 }
 
 const isCorrectSelection = (questions: QuestionSession[], questionId: string, selectedOption: string) => {

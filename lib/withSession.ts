@@ -28,7 +28,7 @@ export async function setApplicantSession(applicant: Applicant, token?: Token, q
     Object.assign(session, {
         isAdmin: false,
         applicant,
-        token,
+        token: token ? token : session.token,
         questions: quest ? quest : session?.questions
     });
 
