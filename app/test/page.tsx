@@ -136,8 +136,6 @@ export default function TestPage() {
     const timer = setInterval(async () => {
       const res = await axios.patch("/api/test", { answers });
 
-      console.log(res);
-
       if (!data && res.status === 200) setData(res.data);
     }, 5000); //Save every 5 seconds
 
@@ -224,9 +222,9 @@ export default function TestPage() {
       </div>
 
       {/* Right: Sidebar */}
-      <div className="w-72 bg-white border-l p-5 space-y-6 shadow-md">
+      <div className="w-72 bg-white border-l p-4 space-y-4 shadow-md">
         {/* Applicant Info */}
-        <div className="text-sm space-y-1">
+        <div className="text-sm space-y-2">
           <p>
             <span className="font-semibold text-gray-600">App No:</span> {appNo}
           </p>
@@ -241,7 +239,7 @@ export default function TestPage() {
         </div>
 
         {/* Timer */}
-        <div className="border border-dashed rounded-xl p-4 text-center">
+        <div className="border border-dashed rounded-xl p-2 text-center">
           <p className="text-gray-500 text-xs">Time Remaining</p>
           <p className="font-mono text-2xl text-red-600">
             {formatTime(timeLeft)}
@@ -253,16 +251,24 @@ export default function TestPage() {
           <p className="text-sm font-semibold text-gray-700">
             Jump to Question:
           </p>
-          <div className="grid grid-cols-4 gap-2">
-            {questions.map((_, idx) => (
+          <div className="grid grid-cols-8 gap-0">
+            {questions.map((question, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
                 className={cn(
-                  "text-sm rounded-md h-8 w-8 flex items-center justify-center border",
-                  currentIndex === idx
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                  "text-sm h-8 w-8 flex items-center justify-center border hover:cursor-pointer",
+
+                  // If already answered
+                  Object.entries(answers).findIndex(
+                    ([questionId]) => parseInt(questionId) === question.id
+                  ) !== -1
+                    ? "text-white bg-green-400 hover:bg-green-500"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-800",
+
+                  // If on the question i.e. its the current question
+                  currentIndex === idx &&
+                    "bg-blue-600 text-white hover:bg-blue-800"
                 )}
               >
                 {idx + 1}
