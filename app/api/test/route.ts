@@ -144,8 +144,12 @@ const getApplicantQuestions = async (questions: Question[]) => {
 }
 
 const isCorrectSelection = (questions: QuestionSession[], questionId: string, selectedOption: string) => {
+    if (!questions || questions.length === 0) return false; // Validate questions array
+
     const question = questions.find(q => q.id === parseInt(questionId));
-    return question?.correctOption?.toString().toLowerCase() === selectedOption.toLowerCase();
+    if (!question || !question.correctOption) return false; // Validate question and correctOption
+
+    return question.correctOption.toString().toLowerCase() === selectedOption.toLowerCase();
 }
 
 const updateApplicantAnswers = async (answers: Record<number, string>, id: number, questions: QuestionSession[]) => {
