@@ -10,17 +10,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
+import { LoaderIcon } from "lucide-react";
 
 interface ConfirmProps {
+  disableSubmitBtn: boolean;
   onConfirmSubmit: () => void;
 }
 
-export default function ConfirmSubmitBtn({ onConfirmSubmit }: ConfirmProps) {
+export default function ConfirmSubmitBtn({
+  disableSubmitBtn,
+  onConfirmSubmit,
+}: ConfirmProps) {
   // Destructive variant for delete action
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">Submit Test</Button>
+        <Button variant="destructive">
+          {disableSubmitBtn
+            ? "Submitting " + <LoaderIcon className="ml-2 animate-spin" />
+            : "Submit Test"}
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -35,8 +44,10 @@ export default function ConfirmSubmitBtn({ onConfirmSubmit }: ConfirmProps) {
           <AlertDialogAction
             className="bg-red-500 hover:bg-red-600"
             onClick={onConfirmSubmit}
+            disabled={disableSubmitBtn}
           >
-            Yes, Continue
+            Yes, Continue{" "}
+            {disableSubmitBtn && <LoaderIcon className="ml-2 animate-spin" />}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

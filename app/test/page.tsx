@@ -9,7 +9,7 @@ import { Applicant, Question, Token } from "@/lib/generated/prisma";
 import Instructions from "@/components/Instructions";
 import axios from "axios";
 import { toast } from "sonner";
-import { Loader2Icon, LoaderIcon, XCircleIcon } from "lucide-react";
+import { LoaderIcon, XCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ConfirmSubmitBtn from "@/components/ConfirmSubmitBtn";
 
@@ -31,6 +31,7 @@ export default function TestPage() {
   const [loadingExam, setLoadingExam] = useState(false);
   const [data, setData] = useState<Test>();
   const [isDataRequested, setIsDataRequested] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // TODO: Frequently update applicant's test state
   // const { data }: { data: Test } = useSWR("/api/test", fetcher);
@@ -54,15 +55,12 @@ export default function TestPage() {
   };
 
   const handleSubmit = useCallback(async () => {
-    const toadDelId = toast.loading(
-      <>
-        Submitting <Loader2Icon className="animate-spin ml-2" />
-      </>,
-      {
-        onDismiss: () => toast.dismiss(),
-        position: "top-right",
-      }
-    );
+    setIsSubmitting(true);
+
+    const toadDelId = toast.loading("Submitting", {
+      onDismiss: () => toast.dismiss(),
+      position: "top-right",
+    });
 
     try {
       const res = await axios.post("/api/test", { answers });
@@ -81,6 +79,7 @@ export default function TestPage() {
       toast.error("Failed to submit exam. Please try again later.");
     }
 
+    setIsSubmitting(false);
     toast.dismiss(toadDelId);
   }, [answers, router]);
 
@@ -113,7 +112,7 @@ export default function TestPage() {
 
   // Timer countdown
   useEffect(() => {
-    if (!examStarted) return;
+    if (!examStarted || isSubmitting) return;
 
     const timer = setInterval(() => {
       setTimeLeft((t) => {
@@ -127,11 +126,11 @@ export default function TestPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [handleSubmit, examStarted]);
+  }, [handleSubmit, examStarted, isSubmitting]);
 
   // Saving test state in real time
   useEffect(() => {
-    if (!examStarted) return;
+    if (!examStarted || isSubmitting) return;
 
     const timer = setInterval(async () => {
       const res = await axios.patch("/api/test", { answers });
@@ -140,7 +139,7 @@ export default function TestPage() {
     }, 5000); //Save every 5 seconds
 
     return () => clearInterval(timer);
-  }, [answers, data, examStarted]);
+  }, [answers, data, examStarted, isSubmitting]);
 
   const formatTime = (t: number) =>
     `${Math.floor(t / 60)
@@ -278,7 +277,10 @@ export default function TestPage() {
         </div>
 
         {/* Submit Button */}
-        <ConfirmSubmitBtn onConfirmSubmit={handleSubmit} />
+        <ConfirmSubmitBtn
+          onConfirmSubmit={handleSubmit}
+          disableSubmitBtn={isSubmitting}
+        />
       </div>
     </div>
   );
