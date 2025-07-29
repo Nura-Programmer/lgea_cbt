@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from "next/server";
 const QUESTIONS_LIMIT = 30; // Limit to 30 questions per applicant
 
 export async function GET(req: NextRequest) {
-
     const session = await getApplicantSession();
 
     if (!session.applicant) return NextResponse.redirect("/login");
@@ -16,9 +15,11 @@ export async function GET(req: NextRequest) {
 
     if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
-    // let applicant = await prisma.applicant.findUnique({ where: { appNo, tokenId }, include: { token: true } });
-
     const requestType = req.nextUrl.searchParams.get("request");
+
+    // Ensure session.questions is initialized
+    if (!session.questions || session.questions.length === 0) session.questions = [];
+
     const questions = await getApplicantQuestions(session.questions);
 
     if (!requestType && status !== "IN_PROGRESS") {
@@ -31,17 +32,14 @@ export async function GET(req: NextRequest) {
             { status: 404 }
         );
 
-        // shauffle the questions and Get the first [QUESTIONS_LIMIT] questions
+        // Shuffle the questions and get the first [QUESTIONS_LIMIT] questions
         questions = [...questions.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_LIMIT)];
 
-        // Create ApplicantAnswer record of the current applicant
-        // to be updated on every users patch request
         const answers = questions.map(question => ({
             applicantId: session.applicant?.id,
             questionId: question.id
         }));
 
-        // Create ApplicantAnswer records in bulk
         await prisma.applicantAnswer.createMany({ data: answers as [] });
 
         const applicant = await prisma.applicant.update({
