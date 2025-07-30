@@ -45,6 +45,7 @@ export default function ApplicantLoginPage() {
 
   const onSubmit = async (data: FormData) => {
     setIsLogin(true);
+    setError("");
 
     try {
       const res = await axios.post("/api/login", data);
@@ -56,11 +57,6 @@ export default function ApplicantLoginPage() {
           dismissible: true,
           duration: 5000,
           position: "top-right",
-          // style: {
-          //   backgroundColor: "#f0fff4",
-          //   color: "#065f46",
-          //   border: "1px solid #bbf7d0",
-          // },
           description: "You have successfully logged in.",
           icon: <CheckCircle2Icon className="h-4 w-4 text-green-500" />,
           richColors: true,
@@ -71,10 +67,15 @@ export default function ApplicantLoginPage() {
         });
       } else setError("Login failed. Please try again.");
     } catch (error) {
+      const err = (
+        error as {
+          response: { data: { error: string } };
+        }
+      ).response.data.error;
+
       console.error("Login error:", error);
-      // err?.response?.data?.error ||
-      setError("Login failed. Please check your credentials.");
-      // Handle error (e.g., show a notification)
+
+      setError(err || "Login failed. Please check your credentials.");
     }
 
     setIsLogin(false);

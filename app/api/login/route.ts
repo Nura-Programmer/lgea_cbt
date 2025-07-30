@@ -17,6 +17,9 @@ export async function POST(req: NextRequest) {
         let applicant = await prisma.applicant.findUnique({ where: { appNo } });
         if (!applicant) return BadRequest;
 
+        if (applicant.status === "DONE")
+            return NextResponse.json({ error: "You already take your test." }, { status: 401 });
+
         const token = await prisma.token.findUnique({ where: { token: tokens, AND: { used: false } } });
         if (!token) return BadRequest;
 
