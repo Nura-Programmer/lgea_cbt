@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { fetcher } from "@/lib/fetcher";
 import { Applicant, Token, TokenType } from "@/lib/generated/prisma";
+import { cn } from "@/lib/utils";
 import useSWR from "swr";
 
 export default function ApplicantsPage() {
@@ -111,7 +112,13 @@ export default function ApplicantsPage() {
                       {getTokenType(token)}
                     </span>
                   </TableCell>
-                  <TableCell>{score ? score : "N/A"}</TableCell>
+                  <TableCell
+                    className={`px-2 py-1 font-medium ${cn(
+                      score ? "text-green-700" : "text-gray-700 italic"
+                    )}`}
+                  >
+                    {score ? ((score / 30) * 100).toFixed(0) : "N/A"}
+                  </TableCell>
                 </TableRow>
               )
             )}
