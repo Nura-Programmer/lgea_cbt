@@ -13,8 +13,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { fetcher } from "@/lib/fetcher";
-import { Token } from "@/lib/generated/prisma";
+import { $Enums } from "@/lib/generated/prisma";
 import useSWR from "swr";
+
+type Token = {
+  appNo: string | null;
+  token: string;
+  id: number;
+  tokenType: $Enums.TokenType;
+  used: boolean;
+  createdAt: Date;
+};
 
 export default function TokensPage() {
   const {
@@ -64,7 +73,7 @@ export default function TokensPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(tokens as Token[]).map((token, index) => (
+            {(tokens as Token[]).map(({ appNo, ...token }, index) => (
               <TableRow key={token.id}>
                 <TableCell>{index + 1}</TableCell>
                 <TableCell className="font-mono text-sm">
@@ -75,7 +84,7 @@ export default function TokensPage() {
                 </TableCell>
                 <TableCell>
                   {token.used ? (
-                    <span className="text-green-600 font-medium">Used</span>
+                    <span className="text-green-600 font-medium">{appNo}</span>
                   ) : (
                     <span className="text-gray-400 italic">Unused</span>
                   )}
