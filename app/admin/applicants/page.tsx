@@ -14,6 +14,7 @@ import {
 import { fetcher } from "@/lib/fetcher";
 import { Applicant, Token, TokenType } from "@/lib/generated/prisma";
 import { cn } from "@/lib/utils";
+import { CheckCircle2Icon, Loader, XCircleIcon } from "lucide-react";
 import useSWR from "swr";
 
 export default function ApplicantsPage() {
@@ -90,14 +91,21 @@ export default function ApplicantsPage() {
                   <TableCell>{surname}</TableCell>
                   <TableCell>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      className={`flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 ${
                         status === "DONE"
-                          ? "bg-green-100 text-green-700"
+                          ? "text-green-700"
                           : status === "IN_PROGRESS"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-gray-100 text-gray-700"
+                          ? "text-yellow-700"
+                          : "text-red-700"
                       }`}
                     >
+                      {status === "DONE" ? (
+                        <CheckCircle2Icon className="w-4 h-4 mr-2" />
+                      ) : status === "IN_PROGRESS" ? (
+                        <Loader className="w-4 h-4 mr-2" />
+                      ) : (
+                        <XCircleIcon className="w-4 h-4 mr-2" />
+                      )}
                       {status}
                     </span>
                   </TableCell>
