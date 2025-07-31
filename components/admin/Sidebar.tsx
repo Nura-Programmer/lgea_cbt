@@ -80,7 +80,10 @@ export default function Sidebar() {
         </nav>
 
         {/* Profile Footer */}
-        <AccountSettings adminUsername={adminUsername} />
+        <AccountSettings
+          adminUsername={adminUsername}
+          onUsernameUpdated={(username) => setAdminUsername(username)}
+        />
       </aside>
     );
 }

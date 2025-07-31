@@ -1,72 +1,52 @@
-import { Button } from "@/components/ui/button";
+// "use client";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import axios from "axios";
+import { Button } from "@/components/ui/button";
 import {
-  CheckCircle2Icon,
   ChevronsUpDownIcon,
-  LoaderIcon,
-  LogOutIcon,
   UserCircle2,
-  XCircleIcon,
+  LogOutIcon,
+  LoaderIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import SetProfileDialog from "./SetProfileDialog";
 import { useState } from "react";
+import axios from "axios";
 import { toast } from "sonner";
-
-interface AccountSettingsProps {
-  adminUsername: string;
-}
+import { useRouter } from "next/navigation";
 
 export default function AccountSettings({
   adminUsername,
-}: AccountSettingsProps) {
-  const router = useRouter();
+  onUsernameUpdated,
+}: {
+  adminUsername: string;
+  onUsernameUpdated: (username: string) => void;
+}) {
   const [logingOut, setLoggingOut] = useState(false);
+  const router = useRouter();
 
   const handleLogOut = async () => {
     try {
-      // Perform logout logic here, e.g., clear session or redirect
       setLoggingOut(true);
       const res = await axios.post("/api/admin/logout");
+
       if (res.status === 200) {
+        toast.success("Logged out successfully");
         router.push("/admin/login");
-
-        toast(res.data.message || "successful", {
-          dismissible: true,
-          duration: 5000,
-          position: "top-right",
-          // style: {
-          //   backgroundColor: "#f0fff4",
-          //   color: "#065f46",
-          //   border: "1px solid #bbf7d0",
-          // },
-          description: "You have successfully logged out.",
-          icon: <CheckCircle2Icon className="h-4 w-4 text-green-500" />,
-          richColors: true,
-          action: {
-            label: <XCircleIcon className="h-4 w-4" />,
-            onClick: () => toast.dismiss(),
-          },
-        });
       } else {
-        console.error("Logout failed:", res.data);
+        toast.error("Logout failed");
       }
-      // Redirect to login page or perform other actions
-    } catch (error) {
-      console.error("Logout error:", error);
-      // Handle error, e.g., show notification
+    } catch (err) {
+      console.error(err);
+      toast.error("Unexpected error");
+    } finally {
+      setLoggingOut(false);
     }
-
-    setLoggingOut(false);
   };
 
   return (
@@ -83,7 +63,7 @@ export default function AccountSettings({
           <ChevronsUpDownIcon className="ml-auto" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" side="right">
+      <DropdownMenuContent id="account" className="w-56" side="right">
         <DropdownMenuLabel>
           <div className="flex items-center gap-2">
             <UserCircle2 className="h-6 w-6 text-gray-500" />
@@ -130,24 +110,28 @@ export default function AccountSettings({
           </DropdownMenuItem>
         </DropdownMenuGroup> */}
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            Change Username
-            <DropdownMenuShortcut>⇧+Ctrl+U</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            Change Password
-            <DropdownMenuShortcut>⇧+Ctrl+P</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          {/* <DropdownMenuItem disabled>API</DropdownMenuItem> */}
-        </DropdownMenuGroup>
+
+        {/* Custom Triggers outside DropdownMenuItem */}
+        <div className="px-2 py-1 space-y-2">
+          <SetProfileDialog
+            onUsernameUpdated={onUsernameUpdated}
+            type="username"
+          />
+          <SetProfileDialog type="password" />
+        </div>
+
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogOut} disabled={logingOut}>
-          <LogOutIcon className="mr-2 h-4 w-4" />
-          Log out
-          {logingOut && <LoaderIcon className="ml-auto h-4 w-4 animate-spin" />}
-          <DropdownMenuShortcut>Ctr+Q</DropdownMenuShortcut>
-        </DropdownMenuItem>
+
+        <Button
+          onClick={handleLogOut}
+          disabled={logingOut}
+          variant="ghost"
+          className="w-full justify-start px-2 py-1"
+        >
+          <LogOutIcon className="h-4 w-4 mr-2" />
+          Log Out
+          {logingOut && <LoaderIcon className="animate-spin h-4 w-4 ml-auto" />}
+        </Button>
       </DropdownMenuContent>
     </DropdownMenu>
   );
