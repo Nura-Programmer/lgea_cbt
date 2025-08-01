@@ -7,6 +7,7 @@ import rocket from "@/public/images/rocket.png";
 import background from "@/public/images/instructions-bg.jpg";
 import clock from "@/public/images/clock.png";
 import { LoaderIcon } from "lucide-react";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface Props {
   visible: boolean;
@@ -59,50 +60,51 @@ const Instructions = ({ visible, onStartExam, loading }: Props) => {
 
       {/* Right: Sidebar */}
       <div className="flex-1 p-2 md:p-4 space-y-4 self-center-safe">
-        <div className="space-y-4">
-          {/* Timer */}
-          <div className="p-2 space-y-4 text-center">
-            <div className="flex justify-center">
-              <Image
-                src={clock}
-                alt="clock"
-                className="max-w-32 animate-bounce"
-              />
-            </div>
-            <h1 className="text-gray-500 text-2xl md:text-3xl">
-              Your Test will automatically start in
-            </h1>
-            <p className="font-mono text-2xl text-red-600">
-              {formatTime(timeLeft)} minutes
-            </p>
+        {/* Timer */}
+        <div className="p-2 space-y-2 text-center">
+          <div className="flex justify-center">
+            <Image
+              src={clock}
+              alt="clock"
+              className="max-w-20 lg:max-w-32 animate-bounce"
+            />
           </div>
+          <h1 className="text-gray-500 text-2xl md:text-3xl">
+            Your Test will automatically start in
+          </h1>
+          <p className="font-mono text-2xl text-red-600">
+            {formatTime(timeLeft)} minutes
+          </p>
         </div>
 
         {/* Instructions */}
-        <div className="px-4 space-y-4 md:mx-12 overflow-y-auto">
+        <div className="px-4 space-y-2 lg:mx-12 overflow-y-auto">
           <h2 className="text-lg">
             <em>Instructions:</em>
           </h2>
-          <ol className="list-decimal list-inside space-y-2 text-gray-800">
-            <li>
-              You will have <strong>2 minutes</strong> to complete the test.
-            </li>
-            <li>
-              The test consists of <strong>10 questions</strong>. Each question
-              is worth <strong>10 points</strong>.
-            </li>
-            <li>You can skip questions and come back later.</li>
-            <li>Once you start, you cannot pause the test.</li>
-            <li>Ensure you have a stable internet connection.</li>
-            <li>
-              Click the <strong>Start Test Now</strong> button to begin.
-            </li>
-            <li>
-              To submit the Test, click the <strong>Submit Test</strong> button
-              at the bottom-right of the screen.
-            </li>
-            <li>Good luck!</li>
-          </ol>
+          <ScrollArea className="max-h-[calc(100vh-380px)] overflow-y-auto">
+            <ol className="list-decimal list-inside space-y-1 text-gray-800">
+              <li>
+                You will have <strong>2 minutes</strong> to complete the test.
+              </li>
+              <li>
+                The test consists of <strong>10 questions</strong>. Each
+                question is worth <strong>10 points</strong>.
+              </li>
+              <li>You can skip questions and come back later.</li>
+              <li>Once you start, you cannot pause the test.</li>
+              <li>Ensure you have a stable internet connection.</li>
+              <li>
+                Click the <strong>Start Test Now</strong> button to begin.
+              </li>
+              <li>
+                To submit the Test, click the <strong>Submit Test</strong>{" "}
+                button at the bottom-right of the screen.
+              </li>
+              <li>Good luck!</li>
+            </ol>
+          </ScrollArea>
+
           {/* Start Button */}
           <div className="flex justify-center mt-8">
             <Button
