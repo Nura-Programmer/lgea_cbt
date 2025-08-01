@@ -9,7 +9,7 @@ import { Applicant, Question, Token } from "@/lib/generated/prisma";
 import Instructions from "@/components/Instructions";
 import axios from "axios";
 import { toast } from "sonner";
-import { LoaderIcon, XCircleIcon } from "lucide-react";
+import { CheckIcon, LoaderIcon, XCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ConfirmSubmitBtn from "@/components/ConfirmSubmitBtn";
 
@@ -168,6 +168,11 @@ export default function TestPage() {
 
   const currentQuestion = questions[currentIndex];
 
+  const isAttempted = (qId: number) =>
+    Object.entries(answers).findIndex(
+      ([questionId]) => parseInt(questionId) === qId
+    ) !== -1;
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Left: Main Question Panel */}
@@ -251,26 +256,25 @@ export default function TestPage() {
             Jump to Question:
           </p>
           <div className="grid grid-cols-8 gap-0">
-            {questions.map((question, idx) => (
+            {questions.map(({ id }, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
                 className={cn(
-                  "text-sm h-8 w-8 flex items-center justify-center border hover:cursor-pointer",
+                  `text-sm h-8 w-8 relative flex items-start justify-center border 
+                  hover:bg-blue-600 hover:text-white hover:cursor-pointer`,
 
                   // If already answered
-                  Object.entries(answers).findIndex(
-                    ([questionId]) => parseInt(questionId) === question.id
-                  ) !== -1
-                    ? "text-white bg-green-400 hover:bg-green-500"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-800",
+                  isAttempted(id) && "text-white bg-blue-900",
 
                   // If on the question i.e. its the current question
-                  currentIndex === idx &&
-                    "bg-blue-600 text-white hover:bg-blue-800"
+                  currentIndex === idx && "text-white bg-blue-700"
                 )}
               >
                 {idx + 1}
+                {isAttempted(id) && (
+                  <CheckIcon className="w-3 h-3 absolute bottom-1 right-1" />
+                )}
               </button>
             ))}
           </div>
