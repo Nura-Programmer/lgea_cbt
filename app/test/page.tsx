@@ -284,6 +284,8 @@ export default function TestPage() {
         <ConfirmSubmitBtn
           onConfirmSubmit={handleSubmit}
           disableSubmitBtn={isSubmitting}
+          questionCount={questions.length}
+          attemptedCount={Object.entries(answers).length}
         />
       </div>
     </div>

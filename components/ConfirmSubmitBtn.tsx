@@ -13,14 +13,20 @@ import {
 import { LoaderIcon } from "lucide-react";
 
 interface ConfirmProps {
+  attemptedCount: number;
+  questionCount: number;
   disableSubmitBtn: boolean;
   onConfirmSubmit: () => void;
 }
 
 export default function ConfirmSubmitBtn({
+  attemptedCount,
+  questionCount,
   disableSubmitBtn,
   onConfirmSubmit,
 }: ConfirmProps) {
+  const unAttempted = questionCount - attemptedCount;
+
   // Destructive variant for delete action
   return (
     <AlertDialog>
@@ -35,8 +41,19 @@ export default function ConfirmSubmitBtn({
         <AlertDialogHeader>
           <AlertDialogTitle>Do you want submit?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you absolutely sure you want submit your test? This will submit
-            your test and save it to the servers.
+            <ul>
+              <li>
+                Unattempted question<small>(s)</small>: {unAttempted} out of{" "}
+                {questionCount}
+              </li>
+              <li>
+                Attempted question<small>(s)</small>: {attemptedCount}
+              </li>
+            </ul>
+            <p className="mt-4">
+              Are you absolutely sure you want submit your test? This will
+              submit your test and save it to the servers.
+            </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
