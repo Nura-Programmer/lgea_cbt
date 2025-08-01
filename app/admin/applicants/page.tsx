@@ -73,6 +73,7 @@ export default function ApplicantsPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>S/N</TableHead>
               <TableHead>App No</TableHead>
               <TableHead>First Name</TableHead>
               <TableHead>Surname</TableHead>
@@ -84,14 +85,18 @@ export default function ApplicantsPage() {
 
           <TableBody>
             {(applicants as (Applicant & Token)[]).map(
-              ({ id, appNo, firstName, surname, status, token, score }) => (
+              (
+                { id, appNo, firstName, surname, status, token, score },
+                index
+              ) => (
                 <TableRow key={id}>
+                  <TableCell>{index + 1}</TableCell>
                   <TableCell>{appNo}</TableCell>
                   <TableCell>{firstName}</TableCell>
                   <TableCell>{surname}</TableCell>
                   <TableCell>
                     <span
-                      className={`flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 ${
+                      className={`flex w-fit px-2 py-1 rounded-full text-xs font-medium bg-gray-100 ${
                         status === "DONE"
                           ? "text-green-700"
                           : status === "IN_PROGRESS"
