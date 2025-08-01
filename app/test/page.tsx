@@ -57,7 +57,7 @@ export default function TestPage() {
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
 
-    const toadDelId = toast.loading("Submitting", {
+    const toastDelId = toast.loading("Submitting", {
       onDismiss: () => toast.dismiss(),
       position: "top-right",
     });
@@ -80,7 +80,7 @@ export default function TestPage() {
     }
 
     setIsSubmitting(false);
-    toast.dismiss(toadDelId);
+    toast.dismiss(toastDelId);
   }, [answers, router]);
 
   const handleStartExam = useCallback(async () => {
