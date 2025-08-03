@@ -4,7 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, FileText, KeyRound } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  KeyRound,
+  FileCog,
+} from "lucide-react";
 import AccountSettings from "./AccountSettings";
 import axios from "axios";
 import { AdminSession } from "@/lib/session";
@@ -15,6 +21,7 @@ const navLinks = [
   { href: "/admin/applicants", label: "Applicants", icon: Users },
   { href: "/admin/questions", label: "Questions", icon: FileText },
   { href: "/admin/tokens", label: "Tokens", icon: KeyRound },
+  { href: "/admin/test", label: "Test", icon: FileCog },
 ];
 
 export default function Sidebar() {

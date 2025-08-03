@@ -14,6 +14,20 @@ async function main() {
     },
   });
 
+  // Test
+  await prisma.test.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      // Use the default values
+      // isActive: false, 
+      // questionCount: 30,
+      // instructions: "Please read the instructions carefully before starting.",
+      // durationMinutes: 60  // in minutes
+      // instructionMinutes: 2, // in minutes
+    }
+  });
+
   // 2. Tokens
   // await prisma.token.createMany({
   //   data: [
