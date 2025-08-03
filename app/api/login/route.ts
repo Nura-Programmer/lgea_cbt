@@ -20,8 +20,11 @@ export async function POST(req: NextRequest) {
         if (applicant.status === "DONE")
             return NextResponse.json({ error: "You already take your test." }, { status: 401 });
 
-        const token = await prisma.token.findUnique({ where: { token: tokens, AND: { used: false } } });
-        if (!token) return BadRequest;
+        const token = await prisma.token.findUnique({ where: { token: tokens } });
+        if (!token) return NextResponse.json({ error: "Invalid tokens" }, { status: 400 });
+
+        if (token.used && token.id !== applicant.tokenId)
+            return NextResponse.json({ error: "Token already being used." }, { status: 400 });
 
         // update
         applicant = await prisma.applicant.update({ where: { appNo }, data: { tokenId: token.id } });
