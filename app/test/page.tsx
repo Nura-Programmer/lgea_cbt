@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 // import useSWR from "swr";
 // import { fetcher } from "@/lib/fetcher";
-import { Applicant, Question, Token } from "@/lib/generated/prisma";
+import { Applicant, Question, Test, Token } from "@/lib/generated/prisma";
 import Instructions from "@/components/Instructions";
 import axios from "axios";
 import { toast } from "sonner";
@@ -13,10 +13,11 @@ import { CheckIcon, LoaderIcon, XCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ConfirmSubmitBtn from "@/components/ConfirmSubmitBtn";
 
-interface Test {
+interface TestInterface {
   applicant: Applicant;
   token: Token;
   questions: Question[];
+  test: Test;
   message?: string;
   error?: string;
 }
@@ -25,21 +26,19 @@ export default function TestPage() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes
+  const [duration, setDuration] = useState(60); // In minutes
+  const [timeLeft, setTimeLeft] = useState(60 * duration);
   const [instructionVisiblity, setInstructionVisiblity] = useState(true);
   const [examStarted, setExamStarted] = useState(false);
   const [loadingExam, setLoadingExam] = useState(false);
-  const [data, setData] = useState<Test>();
+  const [data, setData] = useState<TestInterface>();
   const [isDataRequested, setIsDataRequested] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // TODO: Frequently update applicant's test state
-  // const { data }: { data: Test } = useSWR("/api/test", fetcher);
 
   if (!isDataRequested) {
     try {
       (async () => {
-        const { data }: { data: Test } = await axios.get("/api/test");
+        const { data }: { data: TestInterface } = await axios.get("/api/test");
         setData(data);
       })();
 
@@ -135,25 +134,19 @@ export default function TestPage() {
     const timer = setInterval(async () => {
       const res = await axios.patch("/api/test", { answers });
 
-      if (!data && res.status === 200) setData(res.data);
+      if (!data && res.status === 200) {
+        setData(res.data);
+        setDuration(res.data.test.durationMinutes);
+      }
     }, 5000); //Save every 5 seconds
 
     return () => clearInterval(timer);
   }, [answers, data, examStarted, isSubmitting]);
 
   const formatTime = (t: number) =>
-    `${Math.floor(t / 60)
+    `${Math.floor(t / duration)
       .toString()
-      .padStart(2, "0")}:${(t % 60).toString().padStart(2, "0")}`;
-
-  if (instructionVisiblity)
-    return (
-      <Instructions
-        visible={!instructionVisiblity}
-        onStartExam={handleStartExam}
-        loading={loadingExam}
-      />
-    );
+      .padStart(2, "0")}:${(t % duration).toString().padStart(2, "0")}`;
 
   if (!data)
     return (
@@ -162,9 +155,19 @@ export default function TestPage() {
       </div>
     );
 
-  const { applicant, questions, token } = data;
+  const { applicant, questions, token, test } = data;
   const { appNo, firstName, surname } = applicant;
   const { tokenType } = token;
+
+  if (instructionVisiblity)
+    return (
+      <Instructions
+        test={test}
+        visible={!instructionVisiblity}
+        onStartExam={handleStartExam}
+        loading={loadingExam}
+      />
+    );
 
   const currentQuestion = questions[currentIndex];
 

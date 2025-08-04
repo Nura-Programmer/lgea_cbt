@@ -8,15 +8,20 @@ import background from "@/public/images/instructions-bg.jpg";
 import clock from "@/public/images/clock.png";
 import { LoaderIcon } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
+import { Test } from "@/lib/generated/prisma";
 
 interface Props {
+  test: Test;
   visible: boolean;
   onStartExam: () => void;
   loading: boolean;
 }
 
-const Instructions = ({ visible, onStartExam, loading }: Props) => {
-  const [timeLeft, setTimeLeft] = useState(60 * 2); // 2 minutes
+const Instructions = ({ test, visible, onStartExam, loading }: Props) => {
+  const { durationMinutes, instructions, instructionMinutes, questionCount } =
+    test;
+
+  const [timeLeft, setTimeLeft] = useState((60 * instructionMinutes) | 2); // Use settings from DB or default to 2 minutes
 
   // Timer countdown
   useEffect(() => {
@@ -78,22 +83,26 @@ const Instructions = ({ visible, onStartExam, loading }: Props) => {
         </div>
 
         {/* Instructions */}
-        <div className="px-4 space-y-2 lg:mx-12 overflow-y-auto">
+        <div className="px-4 space-y-2 lg:mx-12 overflow-y-auto text-gray-800">
           <h2 className="text-lg">
-            <em>Instructions:</em>
+            <em>Instructions:</em>{" "}
+            <small>
+              Please read the instructions carefully before starting.
+            </small>
           </h2>
           <ScrollArea className="max-h-[calc(100vh-380px)] overflow-y-auto">
-            <ol className="list-decimal list-inside space-y-1 text-gray-800">
+            <ol className="list-decimal list-inside space-y-1">
               <li>
-                You will have <strong>2 minutes</strong> to complete the test.
+                You will have <strong>{durationMinutes} minutes</strong> to
+                complete the test.
               </li>
               <li>
-                The test consists of <strong>10 questions</strong>. Each
-                question is worth <strong>10 points</strong>.
+                The test consists of <strong>{questionCount} questions</strong>.
+                Each question is worth <strong>1 mark</strong>.
               </li>
-              <li>You can skip questions and come back later.</li>
-              <li>Once you start, you cannot pause the test.</li>
-              <li>Ensure you have a stable internet connection.</li>
+              {instructions.split("\n").map((instruction) => (
+                <li key={instruction}>{instruction}</li>
+              ))}
               <li>
                 Click the <strong>Start Test Now</strong> button to begin.
               </li>

@@ -2,7 +2,7 @@ import { sessionOptions, AdminSession } from "./session";
 import { getIronSession } from "iron-session";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { Applicant, Question, Token } from "./generated/prisma";
+import { Applicant, Question, Test, Token } from "./generated/prisma";
 
 export async function getAdminSession() {
     const cookieStore = await cookies();
@@ -14,22 +14,28 @@ export async function getApplicantSession() {
     return getIronSession<{
         applicant: Applicant,
         token: Token,
-        questions: Question[]
+        test: Test,
+        questionIds: number[]
     }>(cookieStore, { ...sessionOptions });
 }
 
-export async function setApplicantSession(applicant: Applicant, token?: Token, questions?: Question[]) {
+export async function setApplicantSession(
+    { applicant, token, test, questions }: {
+        applicant: Applicant,
+        token?: Token,
+        test?: Test,
+        questions?: Question[]
+    }) {
     const session = await getApplicantSession();
 
-    const quest = questions?.map(({ id, correctOption, questionType, marks }) =>
-        ({ id, correctOption, questionType, marks })
-    );
+    const quest = questions?.map(({ id }) => id);
 
     Object.assign(session, {
         isAdmin: false,
         applicant,
         token: token ? token : session.token,
-        questions: quest ? quest : session?.questions
+        test: test ? test : session.test,
+        questionIds: quest ? quest : session?.questionIds
     });
 
     return await session.save();

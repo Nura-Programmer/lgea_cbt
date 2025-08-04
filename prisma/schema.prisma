@@ -49,7 +49,7 @@ model Test {
   id                 Int      @id @default(autoincrement())
   isActive           Boolean  @default(false) // Whether the test is currently enabled
   questionCount      Int      @default(30) // Number of questions in the test
-  instructions       String   @default("Please read the instructions carefully before starting.")
+  instructions       String   @default("Once you start, you cannot pause the test.\nYou can skip questions and come back later.\nEnsure you have a stable internet connection.")
   durationMinutes    Int      @default(60) // Duration of test in minutes
   instructionMinutes Int      @default(2) // Duration to read instructions (in minutes)
   createdAt          DateTime @default(now())

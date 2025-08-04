@@ -8,6 +8,17 @@ export async function POST(req: NextRequest) {
         { error: "All fields are required" }, { status: 400 }
     );
 
+    const test = await prisma.test.findFirst();
+
+
+    if (!test)
+        return NextResponse.json({ error: "Test need to be set by the admin." }, { status: 301 });
+
+    const isActive = test ? test.isActive : false;
+
+    if (!isActive)
+        return NextResponse.json({ error: "Test was de-activated by the admin." }, { status: 301 });
+
     try {
         const body = await req.json();
         const { appNo, tokens } = body;
@@ -32,12 +43,13 @@ export async function POST(req: NextRequest) {
 
         // Set session applicant and tokens
         // Questions will be set after the user actually start the test
-        await setApplicantSession(applicant, token);
+        await setApplicantSession({ applicant, token, test });
 
         return NextResponse.json({
             message: "Login successful",
             applicant,
-            token
+            token,
+            test
         });
 
     } catch (error) {
