@@ -1,97 +1,137 @@
 "use client";
 
-import { fetcher } from "@/lib/fetcher";
-// import { Test } from "@/lib/generated/prisma";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 import useSWR from "swr";
+import axios from "axios";
+import { useState, useEffect } from "react";
 
-export default function TestPage() {
+const DEFAULTS = {
+  isActive: false,
+  questionCount: 30,
+  durationMinutes: 60,
+  instructionMinutes: 2,
+  instructions: `Once you start, you cannot pause the test.
+You can skip questions and come back later.
+Ensure you have a stable internet connection.`,
+};
+
+export default function TestSettingsForm() {
   const {
     data: test,
-    isLoading,
-    error,
-  } = useSWR("/api/admin/test", fetcher, {
-    refreshInterval: 5000, // Refresh every 5 seconds
-  });
+    // isLoading,
+    mutate,
+  } = useSWR("/api/admin/test", async () =>
+    axios.get("/api/admin/test").then((res) => res.data)
+  );
 
-  // const {
-  //   enable,
-  //   // instructions,
-  //   questionCount,
-  //   testDuration,
-  //   // instructionDuration,
-  // } = test as Test;
+  const [form, setForm] = useState(DEFAULTS);
+  const [loading, setLoading] = useState(false);
 
-  const enable = false;
-  const questionCount = 30;
-  const testDuration = 30;
+  useEffect(() => {
+    if (test) {
+      setForm({
+        isActive: test.isActive ?? DEFAULTS.isActive,
+        questionCount: test.questionCount ?? DEFAULTS.questionCount,
+        durationMinutes: test.durationMinutes ?? DEFAULTS.durationMinutes,
+        instructionMinutes:
+          test.instructionMinutes ?? DEFAULTS.instructionMinutes,
+        instructions: test.instructions ?? DEFAULTS.instructions,
+      });
+    }
+  }, [test]);
 
-  if (isLoading || error) {
-    return (
-      <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
-        <p className="text-xl font-semibold text-red-800">
-          {isLoading ? "Loading..." : "Unexpected error"}
-        </p>
-      </div>
-    );
-  }
+  const handleInputChange = (key: string, value: boolean | number | string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
-  if (!isLoading || !test || !enable || testDuration < 5 || questionCount < 5) {
-    return (
-      <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
-        <h2 className="text-xl font-semibold text-red-800">
-          Test need to be set!
-        </h2>
-        {/* <UploadForm uploadType="test" /> */}
-        test setting form
-      </div>
-    );
-  }
+  const handleApplyChanges = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.post("/api/admin/test", form);
+      toast.success(res.data?.message || "Test settings updated.");
+      mutate(); // Revalidate
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong while saving.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRestoreDefaults = () => setForm(DEFAULTS);
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow border space-y-6">
+      <h2 className="text-2xl font-semibold text-gray-800">Test Settings</h2>
+
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Test</h1>
-        {/* <DeleteAllButton delType="test" /> */}
+        <Label className="mb-2">Test Active</Label>
+        <Switch
+          checked={form.isActive}
+          onCheckedChange={(val) => handleInputChange("isActive", val)}
+        />
       </div>
 
-      {/* <ScrollArea className="max-h-[calc(100vh-120px)] overflow-auto rounded-lg border bg-white shadow"> */}
-      {/* <ol className="grid lg:grid-cols-2 gap-2 p-4">
-          {(questions as Question[]).map(
-            ({ id, questionType, question, options, correctOption }, index) => (
-              <li
-                key={id}
-                className="bg-white border border-gray-200 shadow-md px-6 py-5 flex flex-col md:flex-row md:items-start gap-6 transition hover:shadow-lg"
-              >
-                <div className="flex-1 md:pr-6 md:border-r-gray-200">
-                  <div className="flex justify-between capitalize w-md text-sm text-gray-500 font-medium mb-1">
-                    <span>Question {index + 1}</span> |
-                    <em className="text-gray-400">{questionType}</em> |
-                    <strong>
-                      {correctOption
-                        ? `Correct: ${correctOption}`
-                        : "No correct option specified"}
-                    </strong>
-                  </div>
-                  <p className="text-gray-800 text-base leading-relaxed font-medium">
-                    {question}
-                  </p>
-                  {Object.entries(options as string[]).map(([key, option]) => (
-                    <div
-                      key={key}
-                      className="flex items-start gap-2 rounded-lg bg-gray-50 m-2 p-2"
-                    >
-                      <span className="font-semibold text-gray-600">
-                        {OPTION_LABELS[parseInt(key)]}.
-                      </span>
-                      <span>{option}</span>
-                    </div>
-                  ))}
-                </div>
-              </li>
-            )
-          )}
-        </ol> */}
-      {/* </ScrollArea> */}
+      <div>
+        <Label className="mb-2">Number of Questions</Label>
+        <Input
+          type="number"
+          min={1}
+          value={form.questionCount}
+          onChange={(e) =>
+            handleInputChange("questionCount", parseInt(e.target.value))
+          }
+        />
+      </div>
+
+      <div>
+        <Label className="mb-2">Test Duration (minutes)</Label>
+        <Input
+          type="number"
+          min={1}
+          value={form.durationMinutes}
+          onChange={(e) =>
+            handleInputChange("durationMinutes", parseInt(e.target.value))
+          }
+        />
+      </div>
+
+      <div>
+        <Label className="mb-2">Instruction Duration (minutes)</Label>
+        <Input
+          type="number"
+          min={1}
+          value={form.instructionMinutes}
+          onChange={(e) =>
+            handleInputChange("instructionMinutes", parseInt(e.target.value))
+          }
+        />
+      </div>
+
+      <div>
+        <Label className="mb-2">Instructions</Label>
+        <Textarea
+          value={form.instructions}
+          onChange={(e) =>
+            handleInputChange("instructions", e.target.value.trim())
+          }
+          rows={5}
+        />
+      </div>
+
+      <div className="flex justify-end gap-4 pt-4">
+        <Button variant="outline" onClick={handleRestoreDefaults}>
+          Restore Defaults
+        </Button>
+        <Button onClick={handleApplyChanges} disabled={loading}>
+          {loading ? "Saving..." : "Apply Changes"}
+        </Button>
+      </div>
     </div>
   );
 }
