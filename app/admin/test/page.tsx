@@ -84,7 +84,10 @@ export default function TestSettingsForm() {
           min={1}
           value={form.questionCount}
           onChange={(e) =>
-            handleInputChange("questionCount", parseInt(e.target.value))
+            handleInputChange(
+              "questionCount",
+              e.target.value && parseInt(e.target.value)
+            )
           }
         />
       </div>
@@ -96,7 +99,10 @@ export default function TestSettingsForm() {
           min={1}
           value={form.durationMinutes}
           onChange={(e) =>
-            handleInputChange("durationMinutes", parseInt(e.target.value))
+            handleInputChange(
+              "durationMinutes",
+              e.target.value && parseInt(e.target.value)
+            )
           }
         />
       </div>
@@ -108,7 +114,10 @@ export default function TestSettingsForm() {
           min={1}
           value={form.instructionMinutes}
           onChange={(e) =>
-            handleInputChange("instructionMinutes", parseInt(e.target.value))
+            handleInputChange(
+              "instructionMinutes",
+              e.target.value && parseInt(e.target.value)
+            )
           }
         />
       </div>
