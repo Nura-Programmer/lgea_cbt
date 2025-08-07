@@ -48,7 +48,7 @@ export default function ApplicantLoginPage() {
     setError("");
 
     try {
-      const res = await axios.post("/api/login", data);
+      const res = await axios.post("/auth/login", data);
 
       if (res.status === 200) {
         router.push("/test");

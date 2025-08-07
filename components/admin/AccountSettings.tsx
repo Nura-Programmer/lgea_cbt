@@ -33,7 +33,7 @@ export default function AccountSettings({
   const handleLogOut = async () => {
     try {
       setLoggingOut(true);
-      const res = await axios.post("/api/admin/logout");
+      const res = await axios.post("/auth/admin/logout");
 
       if (res.status === 200) {
         toast.success("Logged out successfully");

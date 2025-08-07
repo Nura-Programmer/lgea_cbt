@@ -6,11 +6,13 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
     const session = await getApplicantSession();
 
-    if (!session.applicant || !session.test) return NextResponse.redirect("/login");
+    if (!session.applicant || !session.test)
+        return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
     const { appNo, tokenId, status } = session.applicant;
 
-    if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    if (!appNo || !tokenId)
+        return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
     const requestType = req.nextUrl.searchParams.get("request");
 
