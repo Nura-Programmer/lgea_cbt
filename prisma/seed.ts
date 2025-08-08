@@ -6,7 +6,7 @@ async function main() {
 
   // 1. Admin
   await prisma.admin.upsert({
-    where: { username: "admin" },
+    where: { id: 1 },
     update: {},
     create: {
       username: "admin",
