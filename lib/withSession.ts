@@ -41,13 +41,13 @@ export async function setApplicantSession(
     return await session.save();
 }
 
+const Unauthorized = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
 export async function requireApplicant() {
     const session = await getApplicantSession();
     const { applicant, token } = session;
 
-    if (!applicant || !token) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!applicant || !token) return Unauthorized;
 
     return null;
 }
@@ -55,9 +55,7 @@ export async function requireApplicant() {
 export async function requireAdmin() {
     const session = await getAdminSession();
 
-    if (!session.isAdmin) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!session.isAdmin) return Unauthorized;
 
     return null;
 }
