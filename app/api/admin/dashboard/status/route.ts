@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isAdmin, Unauthenticated } from "@/lib/verifyAuth";
 
 export async function GET() {
+    if (!isAdmin()) return Unauthenticated;
+
     const [applicantCount, questionCount, tokenCount, test] = await Promise.all([
         prisma.applicant.count(),
         prisma.question.count(),

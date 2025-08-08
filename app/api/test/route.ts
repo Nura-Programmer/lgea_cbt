@@ -1,13 +1,13 @@
 import { Question } from "@/lib/generated/prisma";
 import { prisma } from "@/lib/prisma";
+import { isApplicant, Unauthenticated } from "@/lib/verifyAuth";
 import { getApplicantSession, setApplicantSession } from "@/lib/withSession";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-    const session = await getApplicantSession();
+    if (!isApplicant()) return Unauthenticated;
 
-    if (!session.applicant || !session.test)
-        return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    const session = await getApplicantSession();
 
     const { appNo, tokenId, status } = session.applicant;
 
@@ -88,6 +88,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+    if (!isApplicant()) return Unauthenticated;
+
     const session = await getApplicantSession();
     const { applicant, questionIds } = session;
     const { appNo, id, tokenId } = applicant;
@@ -121,11 +123,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+    if (!isApplicant()) return Unauthenticated;
+
     const session = await getApplicantSession();
     const { applicant, questionIds, token, test } = session;
-    const { appNo, id, tokenId } = applicant;
-
-    if (!appNo || !tokenId || !test) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
     const body = await req.json();
     const { answers }: { answers: Record<number, string> } = body;
@@ -133,7 +134,7 @@ export async function PATCH(req: NextRequest) {
     if (!answers) return NextResponse.json({ error: "No answers provided." });
 
     // Search through the answers and update the ApplicantAnswer records
-    await updateApplicantAnswers(answers, id, questionIds);
+    await updateApplicantAnswers(answers, applicant.id, questionIds);
 
     return NextResponse.json({
         applicant,
