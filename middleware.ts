@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "./lib/withSession";
+import { requireAdmin, requireApplicant } from "./lib/withSession";
 
 export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
 
-    const protectedPaths = ["/admin", "/api/applicants", "/api/questions", "/api/tokens"];
+    const isAdminProtected = url.pathname.startsWith("/admin");
+    const isApplicantProtected = url.pathname.startsWith("/test");
 
-    const isProtected = protectedPaths.some((path) =>
-        url.pathname.startsWith(path) && !url.pathname.startsWith("/admin/login")
-    );
+    if (isApplicantProtected && await requireApplicant()) {
+        return NextResponse.redirect(new URL("/login", req.url));
+    }
 
-    if (isProtected && await requireAdmin()) {
-        return NextResponse.redirect(new URL("/admin/login", req.url));
+    if (isAdminProtected && await requireAdmin()) {
+        return NextResponse.redirect(new URL("/login/admin", req.url));
     }
 
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: ["/admin/:path*", "/api/:path*"],
+    matcher: ["/admin/:path*", "/api/:path*", "/test"],
 };

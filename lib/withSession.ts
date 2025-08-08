@@ -41,20 +41,23 @@ export async function setApplicantSession(
     return await session.save();
 }
 
-// export async function requireApplicant() {
-//     const session = await getApplicantSession();
-//     if (!session.id) {
-//         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//     }
+export async function requireApplicant() {
+    const session = await getApplicantSession();
+    const { applicant, token } = session;
 
-//     // console.log(session)
-//     return null;
-// }
+    if (!applicant || !token) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    return null;
+}
 
 export async function requireAdmin() {
     const session = await getAdminSession();
+
     if (!session.isAdmin) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
     return null;
 }
