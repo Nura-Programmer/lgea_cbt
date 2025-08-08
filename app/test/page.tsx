@@ -66,7 +66,9 @@ export default function TestPage() {
 
       if (res.status === 200) {
         toast.success(res.data.message);
+
         router.push("/submitted");
+        router.refresh();
       } else {
         toast.info("Unexpected Error!", {
           description: "Unable to submit your Test",

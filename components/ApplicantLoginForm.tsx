@@ -13,12 +13,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import {
-  AlertCircleIcon,
-  CheckCircle2Icon,
-  LoaderIcon,
-  XCircleIcon,
-} from "lucide-react";
+import { AlertCircleIcon, LoaderIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface FormData {
@@ -46,20 +41,10 @@ export default function ApplicantLoginForm() {
       const res = await axios.post("/auth/login", data);
 
       if (res.status === 200) {
-        router.push("/test");
+        toast.success(res.data.message || "You have successfully logged in.");
 
-        toast(res.data.message || "successful", {
-          dismissible: true,
-          duration: 5000,
-          position: "top-right",
-          description: "You have successfully logged in.",
-          icon: <CheckCircle2Icon className="h-4 w-4 text-green-500" />,
-          richColors: true,
-          action: {
-            label: <XCircleIcon className="h-4 w-4" />,
-            onClick: () => toast.dismiss(),
-          },
-        });
+        router.push("/admin/dashboard");
+        router.refresh();
       } else setError("Login failed. Please try again.");
     } catch (error) {
       const err = (
