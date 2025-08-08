@@ -37,7 +37,7 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/admin/login">
+            <Link href="/login/admin">
               <Button variant="outline" className="w-46 text-lg" size="lg">
                 Admin login
               </Button>

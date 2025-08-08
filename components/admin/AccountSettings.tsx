@@ -37,7 +37,7 @@ export default function AccountSettings({
 
       if (res.status === 200) {
         toast.success("Logged out successfully");
-        router.push("/admin/login");
+        router.push("/login/admin");
       } else {
         toast.error("Logout failed");
       }
