@@ -11,7 +11,7 @@ const BackToApplicantLoginBtn = () => {
       variant="destructive"
       className="hover:bg-red-700 hover:cursor-pointer"
       size="lg"
-      onClick={() => router.push("/auth/login")}
+      onClick={() => router.push("/login")}
     >
       Back to login
     </Button>
