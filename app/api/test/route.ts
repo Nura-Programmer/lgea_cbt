@@ -11,13 +11,22 @@ export async function GET(req: NextRequest) {
 
     const { appNo, tokenId, status } = session.applicant;
 
-    if (!appNo || !tokenId)
-        return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    if (!appNo || !tokenId) return Unauthenticated;
 
     const requestType = req.nextUrl.searchParams.get("request");
 
     // Ensure session.questions is initialized
-    if (!session.questionIds || session.questionIds.length === 0) session.questionIds = [];
+    if (!session.questionIds || session.questionIds.length === 0) {
+        const questions = [...await prisma.applicantAnswer.findMany({
+            where: { applicantId: session.applicant.id },
+            select: { questionId: true }
+        })];
+
+        const questionIds = questions.map(({ questionId }) => questionId);
+
+        session.questionIds = questionIds;
+        await session.save();
+    }
 
     const questions = await getApplicantQuestions(session.questionIds);
 
@@ -94,7 +103,7 @@ export async function POST(req: NextRequest) {
     const { applicant, questionIds } = session;
     const { appNo, id, tokenId } = applicant;
 
-    if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    if (!appNo || !tokenId) return Unauthenticated;
 
     const body = await req.json();
     const { answers }: { answers: Record<number, string> } = body;
