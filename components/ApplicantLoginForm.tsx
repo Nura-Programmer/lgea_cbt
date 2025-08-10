@@ -43,7 +43,7 @@ export default function ApplicantLoginForm() {
       if (res.status === 200) {
         toast.success(res.data.message || "You have successfully logged in.");
 
-        router.push("/admin/dashboard");
+        router.push("/test");
         router.refresh();
       } else setError("Login failed. Please try again.");
     } catch (error) {
