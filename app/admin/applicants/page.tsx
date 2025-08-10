@@ -18,13 +18,28 @@ import { CheckCircle2Icon, Loader, XCircleIcon } from "lucide-react";
 import useSWR from "swr";
 
 export default function ApplicantsPage() {
-  const {
-    data: applicants,
-    isLoading,
-    error,
-  } = useSWR("/api/admin/applicants", fetcher, {
+  const { data, isLoading, error } = useSWR("/api/admin/applicants", fetcher, {
     refreshInterval: 5000, // Refresh every 5 seconds
   });
+
+  const getQuestionCount = (applicantId: number) => {
+    const {
+      applicantsQuestCount,
+    }: {
+      applicantsQuestCount: {
+        applicantId: number;
+        questionCount: number;
+      }[];
+    } = data;
+
+    if (applicantsQuestCount.length < 1) return 1;
+
+    const questionCount = applicantsQuestCount.find(
+      (appQuest) => appQuest.applicantId === applicantId
+    );
+
+    return questionCount?.questionCount || 1;
+  };
 
   const getTokenType = (token: string) => {
     // If token is null or undefined, return "N/A"
@@ -50,6 +65,8 @@ export default function ApplicantsPage() {
       </div>
     );
   }
+
+  const { applicants } = data;
 
   if (!isLoading && applicants && applicants.length < 1) {
     return (
@@ -130,7 +147,9 @@ export default function ApplicantsPage() {
                       score ? "text-green-700" : "text-gray-700 italic"
                     )}`}
                   >
-                    {score ? ((score / 30) * 100).toFixed(0) : "N/A"}
+                    {score
+                      ? ((score / getQuestionCount(id)) * 100).toFixed(0)
+                      : "N/A"}
                   </TableCell>
                 </TableRow>
               )
