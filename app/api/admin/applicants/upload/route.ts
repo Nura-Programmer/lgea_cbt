@@ -5,6 +5,7 @@ import ExcelJS from "exceljs";
 import { Readable } from "stream";
 import os from "os";
 import { IncomingMessage } from "http";
+import { isAdmin, Unauthenticated } from "@/lib/verifyAuth";
 
 export const config = {
     api: {
@@ -52,6 +53,8 @@ function parseForm(req: NextRequest): Promise<{ filePath: string }> {
 }
 
 export async function POST(req: NextRequest) {
+    if (!isAdmin()) return Unauthenticated;
+
     try {
         const { filePath } = await parseForm(req);
 
@@ -68,7 +71,10 @@ export async function POST(req: NextRequest) {
 
         // Validate worksheet
         if (!worksheet || !worksheet.rowCount) {
-            return NextResponse.json({ error: "Invalid or empty Excel file" }, { status: 400 });
+            return NextResponse.json(
+                { error: "Invalid or empty Excel file" },
+                { status: 400 }
+            );
         }
 
         // worksheet.eachRow contains rows, each row has values 
@@ -86,7 +92,10 @@ export async function POST(req: NextRequest) {
 
         await prisma.applicant.createMany({ data: applicants });
 
-        return NextResponse.json({ message: `${applicants.length} applicants uploaded successfully.`, count: applicants.length });
+        return NextResponse.json({
+            message: `${applicants.length} applicants uploaded successfully.`,
+            count: applicants.length
+        });
     } catch (error) {
         // console.error("Upload error:", error.message);
         console.error("Upload error:", error);

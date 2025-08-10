@@ -1,44 +1,73 @@
-import { Token } from "@/lib/generated/prisma";
+import { Question } from "@/lib/generated/prisma";
 import { prisma } from "@/lib/prisma";
+import { isApplicant, Unauthenticated } from "@/lib/verifyAuth";
 import { getApplicantSession, setApplicantSession } from "@/lib/withSession";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
+    if (!isApplicant()) return Unauthenticated;
 
     const session = await getApplicantSession();
-    const { appNo, tokenId } = session;
 
-    if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    const { appNo, tokenId, status } = session.applicant;
 
-    const applicant = await prisma.applicant.findUnique({ where: { appNo, tokenId }, include: { token: true } });
-
-    if (!applicant) return NextResponse.redirect("/login");
+    if (!appNo || !tokenId) return Unauthenticated;
 
     const requestType = req.nextUrl.searchParams.get("request");
 
-    if (!requestType) {
-        const questions = await prisma.question.findMany({
-            where: { tokenType: applicant.token?.tokenType },
-            orderBy: { id: "asc" },
-            take: 3, // Limit to 3 questions
+    // Ensure session.questions is initialized
+    if (!session.questionIds || session.questionIds.length === 0) {
+        const questions = [...await prisma.applicantAnswer.findMany({
+            where: { applicantId: session.applicant.id },
+            select: { questionId: true }
+        })];
+
+        const questionIds = questions.map(({ questionId }) => questionId);
+
+        session.questionIds = questionIds;
+        await session.save();
+    }
+
+    const questions = await getApplicantQuestions(session.questionIds);
+
+    if (!requestType && status === "PENDING") {
+        let questions = await prisma.question.findMany({
+            where: { tokenType: session.token?.tokenType },
         });
 
-        await prisma.applicant.update({ where: { appNo }, data: { status: "IN_PROGRESS" } });
+        if (questions.length < 1) return NextResponse.json(
+            { error: "No questions found for this token type." },
+            { status: 404 }
+        );
 
-        // Create ApplicantAnswer record of the current applicant
-        // to be updated on every users patch request
+        const test = await prisma.test.findFirst();
+        // Get the questions limit per applicant from DB or set it to default (30)
+        const QUESTIONS_LIMIT = test ? test.questionCount : 30;
+
+        // Shuffle the questions and get the first [QUESTIONS_LIMIT] questions
+        questions = [...questions.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_LIMIT)];
+
         const answers = questions.map(question => ({
-            applicantId: applicant.id,
-            questionId: question.id,
-            selected: null
+            applicantId: session.applicant?.id,
+            questionId: question.id
         }));
 
-        // Create ApplicantAnswer records in bulk
         await prisma.applicantAnswer.createMany({ data: answers as [] });
 
-        await setApplicantSession({ ...applicant, token: applicant.token as Token });
+        const applicant = await prisma.applicant.update({
+            where: { appNo },
+            data: { status: "IN_PROGRESS" }
+        });
 
-        return NextResponse.json({ message: "Successful", applicant, questions });
+        await setApplicantSession({ applicant, token: session.token, questions });
+
+        return NextResponse.json({
+            message: "Successful",
+            applicant,
+            token: session.token,
+            test: session.test,
+            questions
+        });
     }
 
     if (requestType === "startExam") {
@@ -47,57 +76,54 @@ export async function GET(req: NextRequest) {
             data: { startTime: new Date() },
         });
 
-        session.startTime = applicant.startTime;
-        await session.save();
+        await setApplicantSession({ applicant });
 
-        return NextResponse.json({ message: "Exam started successfully", applicant });
+        return NextResponse.json({
+            message: "Exam started successfully",
+            applicant,
+            token: session.token,
+            test: session.test,
+            questions
+        });
     }
+
+    return NextResponse.json({
+        message: "Session restored.",
+        applicant: session.applicant,
+        token: session.token,
+        test: session.test,
+        questions
+    });
 }
 
 export async function POST(req: NextRequest) {
-    const session = await getApplicantSession();
-    const { appNo, id, tokenId } = session;
+    if (!isApplicant()) return Unauthenticated;
 
-    if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    const session = await getApplicantSession();
+    const { applicant, questionIds } = session;
+    const { appNo, id, tokenId } = applicant;
+
+    if (!appNo || !tokenId) return Unauthenticated;
 
     const body = await req.json();
     const { answers }: { answers: Record<number, string> } = body;
 
-    if (!answers) return NextResponse.json({ error: "Error sumitting" }, { status: 401 });
+    if (!answers) return NextResponse.json({ error: "Error submitting" }, { status: 401 });
 
     // Search through the answers and update the ApplicantAnswer records
-    await Promise.all(
-        Object.entries(answers).map(async ([questionId, selectedOption]) => {
-            // check if selectedOption is correct
-            // and Update ApplicantAnswer
-            await prisma.applicantAnswer.updateMany({
-                where: { applicantId: id, questionId: parseInt(questionId) },
-                data: {
-                    selected: selectedOption,
-                    isCorrect: (await prisma.question.findUnique({
-                        where: { id: parseInt(questionId) },
-                        select: { correctOption: true }
-                    }))?.correctOption?.toString().toLowerCase() === selectedOption.toLowerCase()
-                }
-            });
-        })
-    );
+    await updateApplicantAnswers(answers, id, questionIds);
 
-    // TODO: Calculate applicant score
-    const score = await prisma.applicantAnswer.aggregate({
-        _count: {
-            isCorrect: true
-        },
-        where: { applicantId: id }
+    // Calculate applicant score based on the actual count of isCorrect in the database
+    const score = await prisma.applicantAnswer.count({
+        where: { applicantId: id, isCorrect: true }
     });
-
 
     await prisma.applicant.update({
         where: { appNo, tokenId },
         data: {
             status: "DONE",
             endTime: new Date(),
-            score: score._count.isCorrect // Assuming each question carry 1 mark
+            score // Save the actual count of correct answers as the score
         }
     });
 
@@ -106,10 +132,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-    const session = await getApplicantSession();
-    const { appNo, id, tokenId } = session;
+    if (!isApplicant()) return Unauthenticated;
 
-    if (!appNo || !tokenId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    const session = await getApplicantSession();
+    const { applicant, questionIds, token, test } = session;
 
     const body = await req.json();
     const { answers }: { answers: Record<number, string> } = body;
@@ -117,22 +143,44 @@ export async function PATCH(req: NextRequest) {
     if (!answers) return NextResponse.json({ error: "No answers provided." });
 
     // Search through the answers and update the ApplicantAnswer records
+    await updateApplicantAnswers(answers, applicant.id, questionIds);
+
+    return NextResponse.json({
+        applicant,
+        token,
+        test,
+        questions: getApplicantQuestions(questionIds)
+    });
+}
+
+const getApplicantQuestions = async (questionIds: number[]) => {
+    return await Promise.all(
+        questionIds.map(async qId => await prisma.question.findUnique({ where: { id: qId } }))
+    );
+}
+
+const isCorrectSelection = (questions: Question[], questionId: string, selectedOption: string) => {
+    if (!questions || questions.length === 0) return false; // Validate questions array
+
+    const question = questions.find(q => q.id === parseInt(questionId));
+    if (!question || !question.correctOption) return false; // Validate question and correctOption
+
+    return question.correctOption.toString().toLowerCase() === selectedOption.toLowerCase();
+}
+
+const updateApplicantAnswers = async (answers: Record<number, string>, id: number, questionIds: number[]) => {
     await Promise.all(
         Object.entries(answers).map(async ([questionId, selectedOption]) => {
-            // check if selectedOption is correct
-            // and Update ApplicantAnswer
+            const questions = await getApplicantQuestions(questionIds);
+
+            // check if selectedOption is correct and Update ApplicantAnswer
             await prisma.applicantAnswer.updateMany({
                 where: { applicantId: id, questionId: parseInt(questionId) },
                 data: {
                     selected: selectedOption,
-                    isCorrect: (await prisma.question.findUnique({
-                        where: { id: parseInt(questionId) },
-                        select: { correctOption: true }
-                    }))?.correctOption?.toString().toLowerCase() === selectedOption.toLowerCase()
+                    isCorrect: isCorrectSelection(questions as Question[], questionId, selectedOption)
                 }
             });
         })
     );
-
-    return NextResponse.json(null);
 }

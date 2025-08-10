@@ -7,6 +7,8 @@ import { fetcher } from "@/lib/fetcher";
 import { Question } from "@/lib/generated/prisma";
 import useSWR from "swr";
 
+const OPTION_LABELS = ["A", "B", "C", "D"];
+
 export default function QuestionsPage() {
   const {
     data: questions,
@@ -44,7 +46,7 @@ export default function QuestionsPage() {
         <DeleteAllButton delType="questions" />
       </div>
 
-      <ScrollArea className="max-h-[calc(100vh-120px)] overflow-y-auto">
+      <ScrollArea className="max-h-[calc(100vh-120px)] overflow-auto rounded-lg border bg-white shadow">
         <ol className="grid lg:grid-cols-2 gap-2 p-4">
           {(questions as Question[]).map(
             ({ id, questionType, question, options, correctOption }, index) => (
@@ -53,7 +55,7 @@ export default function QuestionsPage() {
                 className="bg-white border border-gray-200 shadow-md px-6 py-5 flex flex-col md:flex-row md:items-start gap-6 transition hover:shadow-lg"
               >
                 <div className="flex-1 md:pr-6 md:border-r-gray-200">
-                  <div className="flex justify-between w-md text-sm text-gray-500 font-medium mb-1">
+                  <div className="flex justify-between capitalize w-md text-sm text-gray-500 font-medium mb-1">
                     <span>Question {index + 1}</span> |
                     <em className="text-gray-400">{questionType}</em> |
                     <strong>
@@ -71,7 +73,7 @@ export default function QuestionsPage() {
                       className="flex items-start gap-2 rounded-lg bg-gray-50 m-2 p-2"
                     >
                       <span className="font-semibold text-gray-600">
-                        {parseInt(key) + 1}.
+                        {OPTION_LABELS[parseInt(key)]}.
                       </span>
                       <span>{option}</span>
                     </div>

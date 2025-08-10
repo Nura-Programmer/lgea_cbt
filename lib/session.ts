@@ -1,5 +1,6 @@
 import { SessionOptions } from "iron-session";
-import { ApplicantAnswer, Status, TokenType } from "./generated/prisma";
+import { Applicant, Test, Token } from "./generated/prisma";
+const { NODE_ENV, SESSION_SECRET } = process.env;
 
 export type AdminSession = {
     isAdmin: boolean;
@@ -7,23 +8,17 @@ export type AdminSession = {
     adminUsername: string;
 };
 
-export type Applicant = {
-    appNo: string;
-    firstName: string
-    surname: string;
-
-    status?: Status;
-    score?: number;
-    answers?: ApplicantAnswer;
-
-    tokenId?: number;
-    token?: TokenType;
-}
+export type ApplicantSession = {
+    applicant: Applicant;
+    questionIds?: number[];
+    token: Token;
+    test: Test;
+};
 
 export const sessionOptions: SessionOptions = {
     cookieName: "cbt-session",
-    password: process.env.SESSION_SECRET as string,
+    password: SESSION_SECRET as string,
     cookieOptions: {
-        secure: process.env.NODE_ENV === "production",
+        secure: NODE_ENV === "production",
     },
 };

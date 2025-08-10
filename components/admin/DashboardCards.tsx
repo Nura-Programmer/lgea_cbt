@@ -4,6 +4,7 @@ import { fetcher } from "@/lib/fetcher";
 import {
   CircleCheck,
   CircleX,
+  FileCog,
   FileText,
   KeyRound,
   LoaderIcon,
@@ -24,6 +25,7 @@ const Icons = {
   applicants: <Users className="h-8 w-8 text-blue-600" />,
   questions: <FileText className="h-8 w-8 text-green-600" />,
   tokens: <KeyRound className="h-8 w-8 text-yellow-600" />,
+  test: <FileCog className="h-8 w-8 text-purple-600" />,
 };
 
 const DashboardCards = () => {

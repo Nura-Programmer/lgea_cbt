@@ -6,6 +6,7 @@ import { Readable } from "stream";
 import os from "os";
 import { IncomingMessage } from "http";
 import { QuestionType, TokenType } from "@/lib/generated/prisma";
+import { isAdmin, Unauthenticated } from "@/lib/verifyAuth";
 
 export const config = {
     api: {
@@ -53,6 +54,8 @@ function parseForm(req: NextRequest): Promise<{ filePath: string }> {
 }
 
 export async function POST(req: NextRequest) {
+    if (!isAdmin()) return Unauthenticated;
+
     try {
         const { filePath } = await parseForm(req);
 
@@ -72,8 +75,26 @@ export async function POST(req: NextRequest) {
         worksheet.eachRow((row) => {
             if (!row.values || !Array.isArray(row.values)) return;
 
-            const [tokenType, question, questionType, optionA, optionB, optionC, optionD, correctOption] = row.values.slice(1) as FileType;
-            if (!tokenType || !question || !questionType || !optionA || !optionB || !optionC || !optionD || !correctOption) {
+            const [
+                tokenType,
+                question,
+                questionType,
+                optionA,
+                optionB,
+                optionC,
+                optionD,
+                correctOption
+            ] = row.values.slice(1) as FileType;
+
+            if (!tokenType ||
+                !question ||
+                !questionType ||
+                !optionA ||
+                !optionB ||
+                !optionC ||
+                !optionD ||
+                !correctOption
+            ) {
                 console.warn("Skipping row due to missing values:", row.values);
                 return;
             }
@@ -89,7 +110,10 @@ export async function POST(req: NextRequest) {
 
         await prisma.question.createMany({ data: questions });
 
-        return NextResponse.json({ message: `${questions.length} questions uploaded successfully.`, count: questions.length });
+        return NextResponse.json({
+            message: `${questions.length} questions uploaded successfully.`,
+            count: questions.length
+        });
     } catch (error) {
         // console.error("Upload error:", error.message);
         console.error("Upload error:", error);

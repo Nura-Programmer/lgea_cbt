@@ -2,27 +2,56 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, FileText, KeyRound } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  KeyRound,
+  FileCog,
+} from "lucide-react";
 import AccountSettings from "./AccountSettings";
+import axios from "axios";
+import { AdminSession } from "@/lib/session";
+import { toast } from "sonner";
 
 const navLinks = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/applicants", label: "Applicants", icon: Users },
   { href: "/admin/questions", label: "Questions", icon: FileText },
   { href: "/admin/tokens", label: "Tokens", icon: KeyRound },
+  { href: "/admin/test", label: "Test", icon: FileCog },
 ];
 
-interface SidebarProps {
-  adminUsername: string;
-}
-
-export default function Sidebar({ adminUsername }: SidebarProps) {
+export default function Sidebar() {
   const pathname = usePathname();
 
   const checkLink = navLinks
     .map((link) => link.href === pathname)
     .includes(true);
+
+  const [adminUsername, setAdminUsername] = useState("");
+
+  useEffect(() => {
+    const fetchAdminUsername = async () => {
+      if (checkLink && !adminUsername) {
+        try {
+          const response = await axios.get("/api/admin");
+          const { adminUsername } = response.data as AdminSession;
+
+          setAdminUsername(adminUsername);
+        } catch (err) {
+          console.error("Error fetching admin username:", err);
+          toast.error(
+            "Unexpected error occurred while fetching admin username."
+          );
+        }
+      }
+    };
+
+    fetchAdminUsername();
+  }, [checkLink, adminUsername]);
 
   if (checkLink)
     return (
@@ -58,9 +87,10 @@ export default function Sidebar({ adminUsername }: SidebarProps) {
         </nav>
 
         {/* Profile Footer */}
-        <AccountSettings adminUsername={adminUsername} />
-        {/* <div className="p-4 border-t mt-auto flex items-center gap-3">
-        </div> */}
+        <AccountSettings
+          adminUsername={adminUsername}
+          onUsernameUpdated={(username) => setAdminUsername(username)}
+        />
       </aside>
     );
 }

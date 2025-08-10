@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isAdmin, Unauthenticated } from "@/lib/verifyAuth";
 
 export async function GET() {
-    const [applicantCount, questionCount, tokenCount] = await Promise.all([
+    if (!isAdmin()) return Unauthenticated;
+
+    const [applicantCount, questionCount, tokenCount, test] = await Promise.all([
         prisma.applicant.count(),
         prisma.question.count(),
         prisma.token.count(),
+        prisma.test.findFirst()
     ]);
+
+    const isActive = test ? test.isActive : false;
 
     const status = [
         {
@@ -23,6 +29,11 @@ export async function GET() {
             title: "tokens",
             isReady: tokenCount > 0,
             statusText: tokenCount > 0 ? "Tokens available" : "Generate new tokens",
+        },
+        {
+            title: "test",
+            isReady: isActive,
+            statusText: isActive ? "Test is activate" : "Activate test",
         },
     ]
 

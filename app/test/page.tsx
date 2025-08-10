@@ -5,16 +5,19 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 // import useSWR from "swr";
 // import { fetcher } from "@/lib/fetcher";
-import { Applicant, Question, Token } from "@/lib/generated/prisma";
+import { Applicant, Question, Test, Token } from "@/lib/generated/prisma";
 import Instructions from "@/components/Instructions";
 import axios from "axios";
 import { toast } from "sonner";
-import { LoaderIcon, XCircleIcon } from "lucide-react";
+import { CheckIcon, LoaderIcon, XCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import ConfirmSubmitBtn from "@/components/ConfirmSubmitBtn";
 
-interface Test {
-  applicant: Applicant & Token;
+interface TestInterface {
+  applicant: Applicant;
+  token: Token;
   questions: Question[];
+  test: Test;
   message?: string;
   error?: string;
 }
@@ -23,39 +26,53 @@ export default function TestPage() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes
+  const [duration, setDuration] = useState(60); // In minutes
+  const [timeLeft, setTimeLeft] = useState(60 * duration);
   const [instructionVisiblity, setInstructionVisiblity] = useState(true);
   const [examStarted, setExamStarted] = useState(false);
-  const [submittingExam, setSubmittingExam] = useState(false);
   const [loadingExam, setLoadingExam] = useState(false);
-  const [data, setData] = useState<Test>();
+  const [data, setData] = useState<TestInterface>();
   const [isDataRequested, setIsDataRequested] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // TODO: Frequently update applicant's test state
-  // const { data }: { data: Test } = useSWR("/api/test", fetcher);
+  useEffect(() => {
+    if (!isDataRequested) {
+      try {
+        (async () => {
+          const { data }: { data: TestInterface } = await axios.get(
+            "/api/test"
+          );
+          setData(data);
+        })();
 
-  if (!isDataRequested) {
-    (async () => {
-      const { data }: { data: Test } = await axios.get("/api/test");
-      setData(data);
-    })();
-
-    setIsDataRequested(true);
-  }
+        setIsDataRequested(true);
+      } catch (err) {
+        console.error(err);
+        toast.error("Unexpected error occur.");
+      }
+    }
+  }, [isDataRequested, setData]);
 
   const handleOptionSelect = (qId: number, option: string) => {
     setAnswers({ ...answers, [qId]: option });
   };
 
   const handleSubmit = useCallback(async () => {
-    setSubmittingExam(true);
+    setIsSubmitting(true);
+
+    const toastDelId = toast.loading("Submitting", {
+      onDismiss: () => toast.dismiss(),
+      position: "top-right",
+    });
 
     try {
       const res = await axios.post("/api/test", { answers });
 
       if (res.status === 200) {
         toast.success(res.data.message);
+
         router.push("/submitted");
+        router.refresh();
       } else {
         toast.info("Unexpected Error!", {
           description: "Unable to submit your Test",
@@ -67,7 +84,8 @@ export default function TestPage() {
       toast.error("Failed to submit exam. Please try again later.");
     }
 
-    setSubmittingExam(false);
+    setIsSubmitting(false);
+    toast.dismiss(toastDelId);
   }, [answers, router]);
 
   const handleStartExam = useCallback(async () => {
@@ -75,7 +93,7 @@ export default function TestPage() {
 
     try {
       const res = await axios.get("/api/test?request=startExam");
-
+      // console.log("================start test", res);
       toast.success(res.data.message || "Exam started successfully", {
         duration: 5000,
         position: "top-right",
@@ -99,7 +117,7 @@ export default function TestPage() {
 
   // Timer countdown
   useEffect(() => {
-    if (!examStarted) return;
+    if (!examStarted || isSubmitting) return;
 
     const timer = setInterval(() => {
       setTimeLeft((t) => {
@@ -113,34 +131,28 @@ export default function TestPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [handleSubmit, examStarted]);
+  }, [handleSubmit, examStarted, isSubmitting]);
 
   // Saving test state in real time
   useEffect(() => {
-    if (!examStarted) return;
+    if (!examStarted || isSubmitting) return;
 
     const timer = setInterval(async () => {
       const res = await axios.patch("/api/test", { answers });
 
-      console.log(res);
+      if (!data && res.status === 200) {
+        setData(res.data);
+        setDuration(res.data.test.durationMinutes);
+      }
     }, 5000); //Save every 5 seconds
 
     return () => clearInterval(timer);
-  }, [answers, examStarted]);
+  }, [answers, data, examStarted, isSubmitting]);
 
   const formatTime = (t: number) =>
-    `${Math.floor(t / 60)
+    `${Math.floor(t / duration)
       .toString()
-      .padStart(2, "0")}:${(t % 60).toString().padStart(2, "0")}`;
-
-  if (instructionVisiblity)
-    return (
-      <Instructions
-        visible={!instructionVisiblity}
-        onStartExam={handleStartExam}
-        loading={loadingExam}
-      />
-    );
+      .padStart(2, "0")}:${(t % duration).toString().padStart(2, "0")}`;
 
   if (!data)
     return (
@@ -149,13 +161,26 @@ export default function TestPage() {
       </div>
     );
 
-  const { applicant, questions } = data;
+  const { applicant, questions, token, test } = data;
   const { appNo, firstName, surname } = applicant;
-  const token = JSON.stringify(applicant.token);
+  const { tokenType } = token;
 
-  const { tokenType } = JSON.parse(token) as Token;
+  if (instructionVisiblity)
+    return (
+      <Instructions
+        test={test}
+        visible={!instructionVisiblity}
+        onStartExam={handleStartExam}
+        loading={loadingExam}
+      />
+    );
 
   const currentQuestion = questions[currentIndex];
+
+  const isAttempted = (qId: number) =>
+    Object.entries(answers).findIndex(
+      ([questionId]) => parseInt(questionId) === qId
+    ) !== -1;
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -210,9 +235,9 @@ export default function TestPage() {
       </div>
 
       {/* Right: Sidebar */}
-      <div className="w-72 bg-white border-l p-5 space-y-6 shadow-md">
+      <div className="w-72 bg-white border-l p-4 space-y-4 shadow-md">
         {/* Applicant Info */}
-        <div className="text-sm space-y-1">
+        <div className="text-sm space-y-2">
           <p>
             <span className="font-semibold text-gray-600">App No:</span> {appNo}
           </p>
@@ -227,7 +252,7 @@ export default function TestPage() {
         </div>
 
         {/* Timer */}
-        <div className="border border-dashed rounded-xl p-4 text-center">
+        <div className="border border-dashed rounded-xl p-2 text-center">
           <p className="text-gray-500 text-xs">Time Remaining</p>
           <p className="font-mono text-2xl text-red-600">
             {formatTime(timeLeft)}
@@ -239,39 +264,38 @@ export default function TestPage() {
           <p className="text-sm font-semibold text-gray-700">
             Jump to Question:
           </p>
-          <div className="grid grid-cols-4 gap-2">
-            {questions.map((_, idx) => (
+          <div className="grid grid-cols-8 gap-0">
+            {questions.map(({ id }, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
                 className={cn(
-                  "text-sm rounded-md h-8 w-8 flex items-center justify-center border",
-                  currentIndex === idx
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                  `text-sm h-8 w-8 relative flex items-start justify-center border 
+                  hover:bg-blue-600 hover:text-white hover:cursor-pointer`,
+
+                  // If already answered
+                  isAttempted(id) && "text-white bg-blue-900",
+
+                  // If on the question i.e. its the current question
+                  currentIndex === idx && "text-white bg-blue-700"
                 )}
               >
                 {idx + 1}
+                {isAttempted(id) && (
+                  <CheckIcon className="w-3 h-3 absolute bottom-1 right-1" />
+                )}
               </button>
             ))}
           </div>
         </div>
 
         {/* Submit Button */}
-        <Button
-          className="w-full mt-6"
-          onClick={handleSubmit}
-          disabled={submittingExam}
-        >
-          {submittingExam ? (
-            <>
-              Test Submitting
-              <LoaderIcon className="ml-2 animate-spin" />
-            </>
-          ) : (
-            "Submit Test"
-          )}
-        </Button>
+        <ConfirmSubmitBtn
+          onConfirmSubmit={handleSubmit}
+          disableSubmitBtn={isSubmitting}
+          questionCount={questions.length}
+          attemptedCount={Object.entries(answers).length}
+        />
       </div>
     </div>
   );

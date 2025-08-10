@@ -2,6 +2,7 @@
 
 import DeleteAllButton from "@/components/admin/DeleteAllButton";
 import UploadForm from "@/components/admin/UploadForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -12,16 +13,33 @@ import {
 } from "@/components/ui/table";
 import { fetcher } from "@/lib/fetcher";
 import { Applicant, Token, TokenType } from "@/lib/generated/prisma";
+import { cn } from "@/lib/utils";
+import { CheckCircle2Icon, Loader, XCircleIcon } from "lucide-react";
 import useSWR from "swr";
 
 export default function ApplicantsPage() {
-  const {
-    data: applicants,
-    isLoading,
-    error,
-  } = useSWR("/api/admin/applicants", fetcher, {
+  const { data, isLoading, error } = useSWR("/api/admin/applicants", fetcher, {
     refreshInterval: 5000, // Refresh every 5 seconds
   });
+
+  const getQuestionCount = (applicantId: number) => {
+    const {
+      applicantsQuestCount,
+    }: {
+      applicantsQuestCount: {
+        applicantId: number;
+        questionCount: number;
+      }[];
+    } = data;
+
+    if (applicantsQuestCount.length < 1) return 1;
+
+    const questionCount = applicantsQuestCount.find(
+      (appQuest) => appQuest.applicantId === applicantId
+    );
+
+    return questionCount?.questionCount || 1;
+  };
 
   const getTokenType = (token: string) => {
     // If token is null or undefined, return "N/A"
@@ -48,6 +66,8 @@ export default function ApplicantsPage() {
     );
   }
 
+  const { applicants } = data;
+
   if (!isLoading && applicants && applicants.length < 1) {
     return (
       <div className="h-full flex flex-col justify-center items-center space-y-4 text-center">
@@ -66,35 +86,48 @@ export default function ApplicantsPage() {
         <DeleteAllButton delType="applicants" />
       </div>
 
-      <div className="rounded-lg border bg-white">
+      <ScrollArea className="max-h-[calc(100vh-120px)] overflow-auto rounded-lg border bg-white shadow">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>S/N</TableHead>
               <TableHead>App No</TableHead>
               <TableHead>First Name</TableHead>
               <TableHead>Surname</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Token Type</TableHead>
+              <TableHead>Test Score</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {(applicants as (Applicant & Token)[]).map(
-              ({ id, appNo, firstName, surname, status, token }) => (
+              (
+                { id, appNo, firstName, surname, status, token, score },
+                index
+              ) => (
                 <TableRow key={id}>
+                  <TableCell>{index + 1}</TableCell>
                   <TableCell>{appNo}</TableCell>
                   <TableCell>{firstName}</TableCell>
                   <TableCell>{surname}</TableCell>
                   <TableCell>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      className={`flex w-fit px-2 py-1 rounded-full text-xs font-medium bg-gray-100 ${
                         status === "DONE"
-                          ? "bg-green-100 text-green-700"
+                          ? "text-green-700"
                           : status === "IN_PROGRESS"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-gray-100 text-gray-700"
+                          ? "text-yellow-700"
+                          : "text-red-700"
                       }`}
                     >
+                      {status === "DONE" ? (
+                        <CheckCircle2Icon className="w-4 h-4 mr-2" />
+                      ) : status === "IN_PROGRESS" ? (
+                        <Loader className="w-4 h-4 mr-2" />
+                      ) : (
+                        <XCircleIcon className="w-4 h-4 mr-2" />
+                      )}
                       {status}
                     </span>
                   </TableCell>
@@ -109,12 +142,21 @@ export default function ApplicantsPage() {
                       {getTokenType(token)}
                     </span>
                   </TableCell>
+                  <TableCell
+                    className={`px-2 py-1 font-medium ${cn(
+                      score ? "text-green-700" : "text-gray-700 italic"
+                    )}`}
+                  >
+                    {score
+                      ? ((score / getQuestionCount(id)) * 100).toFixed(0)
+                      : "N/A"}
+                  </TableCell>
                 </TableRow>
               )
             )}
           </TableBody>
         </Table>
-      </div>
+      </ScrollArea>
     </div>
   );
 }

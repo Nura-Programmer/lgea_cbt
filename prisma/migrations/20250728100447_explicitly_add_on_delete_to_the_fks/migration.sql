@@ -41,12 +41,14 @@ CREATE TABLE `Token` (
 CREATE TABLE `Question` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `tokenType` ENUM('english', 'arabic') NOT NULL,
+    `tokenId` INTEGER NULL,
     `question` VARCHAR(191) NOT NULL,
-    `questionType` ENUM('objective', 'multiChoice') NOT NULL,
+    `questionType` ENUM('objective', 'multiChoice') NOT NULL DEFAULT 'objective',
     `options` JSON NOT NULL,
     `correctOption` JSON NOT NULL,
     `marks` INTEGER NULL DEFAULT 1,
 
+    UNIQUE INDEX `Question_tokenId_key`(`tokenId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -55,7 +57,7 @@ CREATE TABLE `ApplicantAnswer` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `applicantId` INTEGER NOT NULL,
     `questionId` INTEGER NOT NULL,
-    `selected` JSON NOT NULL,
+    `selected` JSON NULL,
     `isCorrect` BOOLEAN NULL,
 
     PRIMARY KEY (`id`)
@@ -65,7 +67,7 @@ CREATE TABLE `ApplicantAnswer` (
 ALTER TABLE `Applicant` ADD CONSTRAINT `Applicant_tokenId_fkey` FOREIGN KEY (`tokenId`) REFERENCES `Token`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `ApplicantAnswer` ADD CONSTRAINT `ApplicantAnswer_applicantId_fkey` FOREIGN KEY (`applicantId`) REFERENCES `Applicant`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `ApplicantAnswer` ADD CONSTRAINT `ApplicantAnswer_applicantId_fkey` FOREIGN KEY (`applicantId`) REFERENCES `Applicant`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `ApplicantAnswer` ADD CONSTRAINT `ApplicantAnswer_questionId_fkey` FOREIGN KEY (`questionId`) REFERENCES `Question`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `ApplicantAnswer` ADD CONSTRAINT `ApplicantAnswer_questionId_fkey` FOREIGN KEY (`questionId`) REFERENCES `Question`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
