@@ -35,19 +35,23 @@ export default function TestPage() {
   const [isDataRequested, setIsDataRequested] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!isDataRequested) {
-    try {
-      (async () => {
-        const { data }: { data: TestInterface } = await axios.get("/api/test");
-        setData(data);
-      })();
+  useEffect(() => {
+    if (!isDataRequested) {
+      try {
+        (async () => {
+          const { data }: { data: TestInterface } = await axios.get(
+            "/api/test"
+          );
+          setData(data);
+        })();
 
-      setIsDataRequested(true);
-    } catch (err) {
-      console.error(err);
-      toast.error("Unexpected error occur.");
+        setIsDataRequested(true);
+      } catch (err) {
+        console.error(err);
+        toast.error("Unexpected error occur.");
+      }
     }
-  }
+  }, [isDataRequested, setData]);
 
   const handleOptionSelect = (qId: number, option: string) => {
     setAnswers({ ...answers, [qId]: option });
