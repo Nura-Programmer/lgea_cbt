@@ -40,20 +40,18 @@ export default function ConfirmSubmitBtn({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Do you want submit?</AlertDialogTitle>
+          <ul>
+            <li>
+              Unattempted question<small>(s)</small>: {unAttempted} out of{" "}
+              {questionCount}
+            </li>
+            <li>
+              Attempted question<small>(s)</small>: {attemptedCount}
+            </li>
+          </ul>
           <AlertDialogDescription>
-            <ul>
-              <li>
-                Unattempted question<small>(s)</small>: {unAttempted} out of{" "}
-                {questionCount}
-              </li>
-              <li>
-                Attempted question<small>(s)</small>: {attemptedCount}
-              </li>
-            </ul>
-            <p className="mt-4">
-              Are you absolutely sure you want submit your test? This will
-              submit your test and save it to the servers.
-            </p>
+            Are you absolutely sure you want submit your test? This will submit
+            your test and save it to the servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
