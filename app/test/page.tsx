@@ -22,12 +22,13 @@ interface TestInterface {
   error?: string;
 }
 
+const SIXTY_SECONDS = 60;
+
 export default function TestPage() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [duration, setDuration] = useState(60); // In minutes
-  const [timeLeft, setTimeLeft] = useState(60 * duration);
+  const [timeLeft, setTimeLeft] = useState(SIXTY_SECONDS * 60); // Default to 60 minutes
   const [instructionVisiblity, setInstructionVisiblity] = useState(true);
   const [examStarted, setExamStarted] = useState(false);
   const [loadingExam, setLoadingExam] = useState(false);
@@ -43,6 +44,7 @@ export default function TestPage() {
             "/api/test"
           );
           setData(data);
+          setTimeLeft(SIXTY_SECONDS * data.test.durationMinutes); // durationMinutes in Mins.
         })();
 
         setIsDataRequested(true);
@@ -140,19 +142,16 @@ export default function TestPage() {
     const timer = setInterval(async () => {
       const res = await axios.patch("/api/test", { answers });
 
-      if (!data && res.status === 200) {
-        setData(res.data);
-        setDuration(res.data.test.durationMinutes);
-      }
+      if (!data && res.status === 200) setData(res.data);
     }, 5000); //Save every 5 seconds
 
     return () => clearInterval(timer);
   }, [answers, data, examStarted, isSubmitting]);
 
   const formatTime = (t: number) =>
-    `${Math.floor(t / duration)
+    `${Math.floor(t / SIXTY_SECONDS)
       .toString()
-      .padStart(2, "0")}:${(t % duration).toString().padStart(2, "0")}`;
+      .padStart(2, "0")}:${(t % SIXTY_SECONDS).toString().padStart(2, "0")}`;
 
   if (!data)
     return (
