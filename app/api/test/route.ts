@@ -17,25 +17,22 @@ export async function GET(req: NextRequest) {
 
     // Ensure session.questions is initialized
     if (!session.questionIds || session.questionIds.length === 0) {
-        const questions = [...await prisma.applicantAnswer.findMany({
+        let questionIds = await prisma.applicantAnswer.findMany({
             where: { applicantId: session.applicant.id },
             select: { questionId: true }
-        })];
-
-        const questionIds = questions.map(({ questionId }) => questionId);
-
-        session.questionIds = questionIds;
-        await session.save();
-    }
-
-    const questions = await getApplicantQuestions(session.questionIds);
-
-    if (!requestType && status === "PENDING") {
-        let questions = await prisma.question.findMany({
-            where: { tokenType: session.token?.tokenType },
         });
 
-        if (questions.length < 1) return NextResponse.json(
+        if (!questionIds.length) {
+            const newQuestionIds = await prisma.question.findMany({
+                where: { tokenType: session.token?.tokenType },
+                select: { id: true }
+            });
+
+            questionIds = newQuestionIds?.map(({ id }) => ({ questionId: id }));
+        }
+
+
+        if (questionIds.length < 1) return NextResponse.json(
             { error: "No questions found for this token type." },
             { status: 404 }
         );
@@ -45,9 +42,18 @@ export async function GET(req: NextRequest) {
         const QUESTIONS_LIMIT = test ? test.questionCount : 30;
 
         // Shuffle the questions and get the first [QUESTIONS_LIMIT] questions
-        questions = [...questions.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_LIMIT)];
+        questionIds = [...questionIds.sort(() => Math.random() - 0.5).slice(0, QUESTIONS_LIMIT)];
 
-        const answers = questions.map(question => ({
+        const qIds = questionIds.map(({ questionId }) => questionId);
+
+        session.questionIds = qIds;
+        await session.save();
+    }
+
+    const questions = await getApplicantQuestions(session.questionIds);
+
+    if (!requestType && status === "PENDING") {
+        const answers = questions.map(question => question && ({
             applicantId: session.applicant?.id,
             questionId: question.id
         }));
@@ -59,7 +65,7 @@ export async function GET(req: NextRequest) {
             data: { status: "IN_PROGRESS" }
         });
 
-        await setApplicantSession({ applicant, token: session.token, questions });
+        await setApplicantSession({ applicant, token: session.token });
 
         return NextResponse.json({
             message: "Successful",
