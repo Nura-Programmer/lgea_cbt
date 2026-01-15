@@ -62,4 +62,4 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The project was deployed for development purposes at [LGEA CBT](https://vercel.com/nuraprogrammers-projects/lgea-cbt) by the creators of the app.
+The project was deployed for development purposes at [LGEA CBT](https://cbt-kappa-opal.vercel.app) by the creators of the app.
